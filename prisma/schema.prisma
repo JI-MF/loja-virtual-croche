@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model categoria {
+  id      Int       @id @default(autoincrement())
+  nome    String    @unique(map: "nome") @db.VarChar(100)
+  produto produto[]
+}
+
+model cliente {
+  id              Int       @id @default(autoincrement())
+  nome            String    @db.VarChar(150)
+  email           String    @unique(map: "email") @db.VarChar(150)
+  telefone        String?   @db.VarChar(20)
+  cpf             String?   @unique(map: "cpf") @db.VarChar(11)
+  data_nascimento DateTime? @db.Date
+  pedido          pedido[]
+}
+
+model item_pedido {
+  id             Int     @id @default(autoincrement())
+  pedido_id      Int
+  produto_id     Int
+  quantidade     Int
+  preco_unitario Decimal @db.Decimal(10, 2)
+  pedido         pedido  @relation(fields: [pedido_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_item_pedido_pedido")
+  produto        produto @relation(fields: [produto_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_item_pedido_produto")
+
+  @@index([pedido_id], map: "fk_item_pedido_pedido")
+  @@index([produto_id], map: "fk_item_pedido_produto")
+}
+
+model pedido {
+  id          Int           @id @default(autoincrement())
+  cliente_id  Int
+  data_pedido DateTime      @default(now()) @db.DateTime(0)
+  status      pedido_status @default(PENDENTE)
+  item_pedido item_pedido[]
+  cliente     cliente       @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_cliente")
+
+  @@index([cliente_id], map: "fk_pedido_cliente")
+}
+
+model produto {
+  id           Int           @id @default(autoincrement())
+  nome         String        @db.VarChar(150)
+  descricao    String?       @db.Text
+  preco        Decimal       @db.Decimal(10, 2)
+  estoque      Int           @default(0)
+  imagem_url   String?       @db.VarChar(500)
+  categoria_id Int
+  item_pedido  item_pedido[]
+  categoria    categoria     @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_categoria")
+
+  @@index([categoria_id], map: "fk_produto_categoria")
+}
+
+enum pedido_status {
+  PENDENTE
+  CONFIRMADO
+  ENVIADO
+  ENTREGUE
+  CANCELADO
+}
