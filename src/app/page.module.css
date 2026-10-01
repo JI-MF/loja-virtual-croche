@@ -26,6 +26,12 @@
   align-items: center;
 }
 
+.logo img {
+  width: 150px;
+  height: 50px;
+  object-fit: contain;
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -402,4 +408,41 @@
   .productImage {
     height: 300px;
   }
+}
+
+.contact {
+  padding: 80px 8%;
+}
+
+.contactContent {
+  max-width: 1100px;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+
+  align-items: start;
+}
+
+.contactText h2 {
+  font-size: 2.5rem;
+  margin: 10px 0 20px;
+}
+
+.contactText p {
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+
+  .contactContent {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .contact {
+    padding: 60px 6%;
+  }
+
 }

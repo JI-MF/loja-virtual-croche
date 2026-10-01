@@ -1,5 +1,6 @@
 import Image from "next/image";
 import styles from "./page.module.css";
+import CadastroForm from "@/components/cadastro-form";
 
 
 export default function Home(){
@@ -18,7 +19,7 @@ export default function Home(){
           <a href="#">Início</a>
           <a href="#">Produtos</a>
           <a href="#">Categorias</a>
-          <a href="#">Contato</a>
+          <a href="#contato">Contato</a>
           <a href="#">Como Comprar</a>
           <a href="#">Sobre Nós</a>
         </nav>
@@ -101,7 +102,6 @@ export default function Home(){
 
           </div>
 
-
           <div className={styles.productList}>
 
             <article className={styles.product}>
@@ -115,7 +115,6 @@ export default function Home(){
 
             </article>
 
-
             <article className={styles.product}>
 
               <div className={styles.productImage}>
@@ -126,7 +125,6 @@ export default function Home(){
               <p>R$ 119,90</p>
 
             </article>
-
 
             <article className={styles.product}>
 
@@ -143,115 +141,32 @@ export default function Home(){
 
         </section>
 
+        <section id="contato" className={styles.contact}>
+
+          <div className={styles.contactContent}>
+
+          <div className={styles.contactText}>
+            <p className={styles.subtitle}>
+              FALE CONOSCO
+            </p>
+
+            <h2>
+              Entre em contato
+            </h2>
+
+            <p>
+              Tem alguma dúvida sobre nossos produtos?
+              Preencha o formulário e fale conosco.
+            </p>
+          </div>
+
+          <CadastroForm />
+
+        </div>
+
+      </section>
+
       </main>
-    </div>
+     </div>
   )
 }
-
-
-
-//       <main>
-
-//         <section className={styles.hero}>
-//           <div className={styles.heroContent}>
-//             <p className={styles.subtitle}>
-//               NOVA COLEÇÃO
-//             </p>
-
-//             <h1>
-//               Seu estilo.
-//               <br />
-//               Sua identidade.
-//             </h1>
-
-//             <p className={styles.description}>
-//               Encontre peças que combinam com você
-//               e transforme seu estilo.
-//             </p>
-
-//             <button className={styles.button}>
-//               Ver produtos
-//             </button>
-//           </div>
-//         </section>
-
-
-//         <section className={styles.categories}>
-//           <h2>Categorias</h2>
-
-//           <div className={styles.categoryList}>
-//             <div className={styles.category}>
-//               <span>01</span>
-//               <h3>Vestidos</h3>
-//             </div>
-
-//             <div className={styles.category}>
-//               <span>02</span>
-//               <h3>Blusas</h3>
-//             </div>
-
-//             <div className={styles.category}>
-//               <span>03</span>
-//               <h3>Calças</h3>
-//             </div>
-
-//             <div className={styles.category}>
-//               <span>04</span>
-//               <h3>Croppeds</h3>
-//             </div>
-//           </div>
-//         </section>
-
-
-//         <section className={styles.products}>
-//           <div className={styles.sectionTitle}>
-//             <div>
-//               <p>CONFIRA</p>
-//               <h2>Produtos em destaque</h2>
-//             </div>
-
-//             <a href="#">
-//               Ver todos →
-//             </a>
-//           </div>
-
-
-//           <div className={styles.productList}>
-
-//             <article className={styles.product}>
-//               <div className={styles.productImage}>
-//                 Produto 01
-//               </div>
-
-//               <h3>Vestido Elegance</h3>
-//               <p>R$ 129,90</p>
-//             </article>
-
-
-//             <article className={styles.product}>
-//               <div className={styles.productImage}>
-//                 Produto 02
-//               </div>
-
-//               <h3>Blusa Essential</h3>
-//               <p>R$ 79,90</p>
-//             </article>
-
-
-//             <article className={styles.product}>
-//               <div className={styles.productImage}>
-//                 Produto 03
-//               </div>
-
-//               <h3>Calça Wide</h3>
-//               <p>R$ 149,90</p>
-//             </article>
-
-//           </div>
-//         </section>
-
-//       </main>
-
-//     </div>
-//   );
-// }

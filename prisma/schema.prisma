@@ -61,6 +61,15 @@ model produto {
   @@index([categoria_id], map: "fk_produto_categoria")
 }
 
+model contato {
+  id        Int      @id @default(autoincrement())
+  nome      String   @db.VarChar(150)
+  email     String   @db.VarChar(150)
+  telefone  String?  @db.VarChar(20)
+  mensagem  String   @db.Text
+  criado_em DateTime @default(now()) @db.DateTime(0)
+}
+
 enum pedido_status {
   PENDENTE
   CONFIRMADO
