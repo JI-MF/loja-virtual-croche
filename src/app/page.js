@@ -156,7 +156,7 @@ export default function Home(){
                 type="button"
                 className={styles.button}
                 onClick={() => {
-                  setProdutoSelecionado(produto.id);
+                  setProdutoSelecionado(produto);
 
                   document
                   .getElementById("contato")
@@ -196,7 +196,7 @@ export default function Home(){
             </p>
           </div>
 
-          <CadastroForm produtoId={produtoSelecionado} />
+          <CadastroForm produto={produtoSelecionado} />
 
         </div>
 

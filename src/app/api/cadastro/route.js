@@ -24,6 +24,22 @@ export async function POST(request) {
       );
     }
 
+    const produto = await prisma.produto.findUnique({
+      where: {
+        id: resultado.data.produto_id,
+      },
+    });
+
+    if (!produto){
+      return Response.json({
+        erro: "Produto não encontrado",
+      },
+    {
+      status: 404,
+    }
+    );
+    }
+
     const contato = await prisma.contato.create({
       data: {
         nome: resultado.data.nome,

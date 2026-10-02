@@ -10,7 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-export default function CadastroForm({produtoId}) {
+const whatsAppNumero = "5592994893590"
+
+export default function CadastroForm({produto}) {
   const {
     register,
     handleSubmit,
@@ -29,6 +31,10 @@ export default function CadastroForm({produtoId}) {
   });
 
   async function onSubmit(data) {
+    if (!produto){
+      alert("Selecione um produto antes de enviar o cadastro");
+      return;
+    }
     try {
       const response = await fetch("/api/cadastro", {
         method: "POST",
@@ -39,7 +45,7 @@ export default function CadastroForm({produtoId}) {
 
         body: JSON.stringify({
           ...data,
-          produto_id: produtoId,
+          produto_id: produto.id,
         }),
       });
 
@@ -57,6 +63,19 @@ export default function CadastroForm({produtoId}) {
 
         return;
       }
+
+      const mensagemWhatsApp = `Olá! Meu nome é ${data.nome}.
+      Tenho interesse no seguinte produto\n:
+      Produto: ${produto.nome}
+      Preço: R$ ${Number(produto.preco).toFixed(2).replace(".", ",")}${
+        data.mensagem
+          ? `\n\nObservação:\n${data.mensagem}`
+          : ""
+      }`;
+
+      const urlWhatsApp = `https://wa.me/${whatsAppNumero}?text=${encodeURIComponent( mensagemWhatsApp )}`;
+
+      window.open(urlWhatsApp, "_blank");
 
       alert("Cadastro realizado com sucesso!");
 
