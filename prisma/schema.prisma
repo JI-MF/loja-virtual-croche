@@ -57,6 +57,7 @@ model produto {
   categoria_id Int
   item_pedido  item_pedido[]
   categoria    categoria     @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_categoria")
+  contato contato[]
 
   @@index([categoria_id], map: "fk_produto_categoria")
 }
@@ -67,7 +68,10 @@ model contato {
   email     String   @db.VarChar(150)
   telefone  String?  @db.VarChar(20)
   mensagem  String   @db.Text
+  produto_id Int?
+  produto    produto? @relation(fields: [produto_id], references: [id])
   criado_em DateTime @default(now()) @db.DateTime(0)
+  @@index([produto_id])
 }
 
 enum pedido_status {

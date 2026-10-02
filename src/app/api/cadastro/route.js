@@ -30,6 +30,7 @@ export async function POST(request) {
         email: resultado.data.email,
         telefone: resultado.data.telefone,
         mensagem: resultado.data.mensagem,
+        produto_id: resultado.data.produto_id,
       },
     });
 

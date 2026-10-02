@@ -22,4 +22,12 @@ export const cadastroSchema = z.object({
     .string()
     .trim()
     .min(10, { error: "A mensagem é obrigatória" }),
+
+  produto_id: z
+    .number()
+    .int()
+    .positive()
+    .nullable()
+    .optional(),
 });
+

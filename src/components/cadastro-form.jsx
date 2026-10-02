@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
-export default function CadastroForm() {
+export default function CadastroForm({produtoId}) {
   const {
     register,
     handleSubmit,
@@ -37,7 +37,10 @@ export default function CadastroForm() {
           "Content-Type": "application/json",
         },
 
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          ...data,
+          produto_id: produtoId,
+        }),
       });
 
       const resultado = await response.json();

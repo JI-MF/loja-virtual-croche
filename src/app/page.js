@@ -1,9 +1,32 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
 import Image from "next/image";
 import styles from "./page.module.css";
 import CadastroForm from "@/components/cadastro-form";
 
 
 export default function Home(){
+
+  const [produtos, setProdutos]= useState([]);
+  const [produtoSelecionado, setProdutoSelecionado] =useState(null);
+
+  useEffect(() => {
+    async function carregarProdutos(){
+      try{
+        const response = await fetch ("/api/produtos");
+
+        const dados = await response.json();
+
+        setProdutos(dados);
+      }
+      catch(error){
+        console.error("Erro ao carregar os produtos:",error);
+      }
+    }
+    carregarProdutos();
+  },[]);
   return(
     <div className={styles.page}>
       <header className={styles.header}>
@@ -104,38 +127,51 @@ export default function Home(){
 
           <div className={styles.productList}>
 
-            <article className={styles.product}>
+            {produtos.map((produto) => (
+              <article
+                key={produto.id}
+                className={styles.product}
+              >
 
-              <div className={styles.productImage}>
-                Produto 01
-              </div>
+                <div className={styles.productImage}>
+                  {produto.imagem_url ? (
+                    <Image
+                      src={produto.imagem_url}
+                      alt={produto.nome}
+                      width={300}
+                      height={300}
+                    />
+                  ) : (
+                    "Sem imagem"
+                  )}
+                </div>
 
-              <h3>Bolsa de Crochê</h3>
-              <p>R$ 89,90</p>
+                <h3>{produto.nome}</h3>
 
-            </article>
+                <p>
+                  R$ {Number(produto.preco).toFixed(2).replace(".", ",")}
+                </p>
 
-            <article className={styles.product}>
+                <button
+                type="button"
+                className={styles.button}
+                onClick={() => {
+                  setProdutoSelecionado(produto.id);
 
-              <div className={styles.productImage}>
-                Produto 02
-              </div>
+                  document
+                  .getElementById("contato")
+                  ?.scrollIntoView({
+                    behavior: "smooth",
+                  });
+                }
 
-              <h3>Blusa de Crochê</h3>
-              <p>R$ 119,90</p>
+                }
+                >
+                  Tenho Interesse
+                </button>
 
-            </article>
-
-            <article className={styles.product}>
-
-              <div className={styles.productImage}>
-                Produto 03
-              </div>
-
-              <h3>Amigurumi</h3>
-              <p>R$ 59,90</p>
-
-            </article>
+              </article>
+            ))}
 
           </div>
 
@@ -160,7 +196,7 @@ export default function Home(){
             </p>
           </div>
 
-          <CadastroForm />
+          <CadastroForm produtoId={produtoSelecionado} />
 
         </div>
 
