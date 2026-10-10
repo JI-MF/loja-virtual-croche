@@ -1,3 +1,5 @@
+import { criarOTP } from "@/lib/otp-service";
+
 import { cadastroSchema } from "@/lib/cadastro-schema";
 import { prisma } from "@/lib/prisma";
 
@@ -49,6 +51,8 @@ export async function POST(request) {
         produto_id: resultado.data.produto_id,
       },
     });
+
+    await criarOTP(contato.id);
 
     return Response.json(
       {

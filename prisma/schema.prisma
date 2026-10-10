@@ -72,6 +72,23 @@ model contato {
   produto    produto? @relation(fields: [produto_id], references: [id])
   criado_em DateTime @default(now()) @db.DateTime(0)
   @@index([produto_id])
+  email_verificado Boolean @default(false)
+  otp otp[]
+}
+
+model otp {
+  id           Int      @id @default(autoincrement())
+  contato_id   Int
+  codigo_hash  String   @db.VarChar(255)
+  criado_em    DateTime @default(now()) @db.DateTime(0)
+  expira_em    DateTime @db.DateTime(0)
+  tentativas   Int      @default(0)
+  usado        Boolean  @default(false)
+  ativo        Boolean  @default(true)
+
+  contato contato @relation(fields: [contato_id], references: [id])
+
+  @@index([contato_id])
 }
 
 enum pedido_status {
