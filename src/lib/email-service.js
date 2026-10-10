@@ -1,36 +1,57 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_APP_PASSWORD,
+    },
+});
 
 export async function enviarOTP(email, codigo) {
-  const { data, error } = await resend.emails.send({
-    from: "Produções da Vick <onboarding@resend.dev>",
-    to: [email],
-    subject: "Código de verificação - Produções da Vick",
-    html: `
-      <h2>Verificação de e-mail</h2>
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
+        throw new Error("Credenciais de e-mail não configuradas.");
+    }
 
-      <p>Olá!</p>
+    const resultado = await transporter.sendMail({
+        from: `"Produções da Vick" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: "Código de verificação - Produções da Vick",
+        text: `Seu código de verificação é ${codigo}. Ele expira em 5 minutos.`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto;">
+                <h2>Produções da Vick Crochê</h2>
 
-      <p>
-        Seu código de verificação é:
-      </p>
+                <p>Olá!</p>
 
-      <h1>${codigo}</h1>
+                <p>Utilize o código abaixo para verificar seu e-mail:</p>
 
-      <p>
-        Este código é válido por 5 minutos.
-      </p>
+                <div style="
+                    font-size: 32px;
+                    font-weight: bold;
+                    letter-spacing: 8px;
+                    padding: 20px;
+                    text-align: center;
+                    background-color: #f5f5f5;
+                    border-radius: 8px;
+                ">
+                    ${codigo}
+                </div>
 
-      <p>
-        Se você não solicitou este código, ignore este e-mail.
-      </p>
-    `,
-  });
+                <p>Este código expira em <strong>5 minutos</strong>.</p>
 
-  if (error) {
-    throw new Error(`Erro ao enviar e-mail: ${error.message}`);
-  }
+                <p>Se você não solicitou esta verificação, ignore esta mensagem.</p>
 
-  return data;
+                <hr>
+
+                <p style="font-size: 12px; color: #777;">
+                    Produções da Vick Crochê
+                </p>
+            </div>
+        `,
+    });
+
+    return resultado;
 }
