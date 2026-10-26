@@ -18,9 +18,12 @@ model cliente {
   nome            String    @db.VarChar(150)
   email           String    @unique(map: "email") @db.VarChar(150)
   telefone        String?   @db.VarChar(20)
-  cpf             String?   @unique(map: "cpf") @db.VarChar(11)
   data_nascimento DateTime? @db.Date
-  pedido          pedido[]
+
+  email_verificado Boolean          @default(false)
+  pedido           pedido[]
+  otp_cliente      otp_cliente[]
+  sessao_cliente   sessao_cliente[]
 }
 
 model item_pedido {
@@ -37,12 +40,16 @@ model item_pedido {
 }
 
 model pedido {
-  id          Int           @id @default(autoincrement())
+  id          Int             @id @default(autoincrement())
   cliente_id  Int
-  data_pedido DateTime      @default(now()) @db.DateTime(0)
-  status      pedido_status @default(PENDENTE)
+  data_pedido DateTime        @default(now()) @db.DateTime(0)
+  status      pedido_status   @default(PENDENTE)
+  email_confirmacao_enviado Boolean @default(false)
+  valor_total Decimal         @default(0.00) @db.Decimal(10, 2)
+
   item_pedido item_pedido[]
-  cliente     cliente       @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_cliente")
+  pagamento   pagamento[]
+  cliente     cliente         @relation(fields: [cliente_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_pedido_cliente")
 
   @@index([cliente_id], map: "fk_pedido_cliente")
 }
@@ -57,38 +64,68 @@ model produto {
   categoria_id Int
   item_pedido  item_pedido[]
   categoria    categoria     @relation(fields: [categoria_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_produto_categoria")
-  contato contato[]
+  contato      contato[]
 
   @@index([categoria_id], map: "fk_produto_categoria")
 }
 
 model contato {
-  id        Int      @id @default(autoincrement())
-  nome      String   @db.VarChar(150)
-  email     String   @db.VarChar(150)
-  telefone  String?  @db.VarChar(20)
-  mensagem  String   @db.Text
-  produto_id Int?
-  produto    produto? @relation(fields: [produto_id], references: [id])
-  criado_em DateTime @default(now()) @db.DateTime(0)
+  id               Int      @id @default(autoincrement())
+  nome             String   @db.VarChar(150)
+  email            String   @db.VarChar(150)
+  telefone         String?  @db.VarChar(20)
+  mensagem         String   @db.Text
+  produto_id       Int?
+  produto          produto? @relation(fields: [produto_id], references: [id])
+  criado_em        DateTime @default(now()) @db.DateTime(0)
+  email_verificado Boolean  @default(false)
+  otp              otp[]
+
   @@index([produto_id])
-  email_verificado Boolean @default(false)
-  otp otp[]
 }
 
 model otp {
-  id           Int      @id @default(autoincrement())
-  contato_id   Int
-  codigo_hash  String   @db.VarChar(255)
-  criado_em    DateTime @default(now()) @db.DateTime(0)
-  expira_em    DateTime @db.DateTime(0)
-  tentativas   Int      @default(0)
-  usado        Boolean  @default(false)
-  ativo        Boolean  @default(true)
+  id          Int      @id @default(autoincrement())
+  contato_id  Int
+  codigo_hash String   @db.VarChar(255)
+  criado_em   DateTime @default(now()) @db.DateTime(0)
+  expira_em   DateTime @db.DateTime(0)
+  tentativas  Int      @default(0)
+  usado       Boolean  @default(false)
+  ativo       Boolean  @default(true)
 
   contato contato @relation(fields: [contato_id], references: [id])
 
   @@index([contato_id])
+}
+
+model otp_cliente {
+  id          Int      @id @default(autoincrement())
+  cliente_id  Int
+  codigo_hash String   @db.VarChar(255)
+  criado_em   DateTime @default(now()) @db.DateTime(0)
+  expira_em   DateTime @db.DateTime(0)
+  tentativas  Int      @default(0)
+  usado       Boolean  @default(false)
+  ativo       Boolean  @default(true)
+
+  cliente cliente @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+
+  @@index([cliente_id])
+}
+
+model sessao_cliente {
+  id         Int      @id @default(autoincrement())
+  cliente_id Int
+  token_hash String   @unique @db.VarChar(64)
+  criado_em  DateTime @default(now()) @db.DateTime(0)
+  expira_em  DateTime @db.DateTime(0)
+  revogado   Boolean  @default(false)
+
+  cliente cliente @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+
+  @@index([cliente_id])
+  @@index([expira_em])
 }
 
 enum pedido_status {
@@ -97,4 +134,49 @@ enum pedido_status {
   ENVIADO
   ENTREGUE
   CANCELADO
+}
+
+
+model pagamento {
+  id                      Int                  @id @default(autoincrement())
+  pedido_id               Int                  @unique
+  provedor                String               @default("MERCADO_PAGO") @db.VarChar(30)
+  mercado_pago_payment_id String?              @unique @db.VarChar(100)
+  preferencia_id          String?              @db.VarChar(100)
+  status                  pagamento_status     @default(PENDENTE)
+  valor                   Decimal              @db.Decimal(10, 2)
+  criado_em               DateTime             @default(now()) @db.DateTime(0)
+  atualizado_em           DateTime             @updatedAt @db.DateTime(0)
+  mercado_pago_order_id   String?              @unique @db.VarChar(100)
+  checkout_url            String?              @db.VarChar(1000)
+  idempotency_key         String?              @unique @db.VarChar(100)
+
+  pedido                  pedido               @relation(fields: [pedido_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tentativas              tentativa_pagamento[]
+}
+
+model tentativa_pagamento {
+  id                      Int              @id @default(autoincrement())
+  pagamento_id            Int
+  mercado_pago_order_id   String?          @unique @db.VarChar(100)
+  idempotency_key         String?          @unique @db.VarChar(100)
+  checkout_url            String?          @db.VarChar(1000)
+  status                  pagamento_status @default(PENDENTE)
+  valor                   Decimal          @db.Decimal(10, 2)
+  criado_em               DateTime         @default(now()) @db.DateTime(0)
+  atualizado_em           DateTime         @updatedAt @db.DateTime(0)
+
+  pagamento pagamento @relation(fields: [pagamento_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([pagamento_id])
+}
+
+enum pagamento_status {
+  PENDENTE
+  EM_PROCESSAMENTO
+  APROVADO
+  RECUSADO
+  CANCELADO
+  ESTORNADO
+  EM_DISPUTA
 }

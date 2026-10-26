@@ -55,3 +55,39 @@ export async function enviarOTP(email, codigo) {
 
     return resultado;
 }
+
+
+export async function enviarConfirmacaoPedido(email, pedido) {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
+        throw new Error("Credenciais de e-mail não configuradas.");
+    }
+
+    const itens = pedido.item_pedido
+        .map((item) =>
+            `${item.produto.nome} - Quantidade: ${item.quantidade} - R$ ${Number(item.preco_unitario).toFixed(2)}`
+        )
+        .join("\n");
+
+    const resultado = await transporter.sendMail({
+        from: `"Produções da Vick Crochê" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: `Confirmação do pedido #${pedido.id} - Produções da Vick`,
+        text: `
+Olá, ${pedido.cliente.nome}!
+
+Seu pagamento foi aprovado e seu pedido foi confirmado.
+
+Número do pedido: ${pedido.id}
+Data: ${new Date(pedido.data_pedido).toLocaleString("pt-BR")}
+Itens:
+${itens}
+
+Valor total: R$ ${Number(pedido.valor_total).toFixed(2)}
+
+Agradecemos pela sua compra!
+Produções da Vick Crochê
+        `,
+    });
+
+    return resultado;
+}
