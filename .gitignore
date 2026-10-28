@@ -41,3 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# Arquivo auxiliar de skills do ambiente de desenvolvimento
+/skills-lock.json
+
+# arquivos e pastas auxiliares que nao devem ser enviados ao Git
+/.agents/
+/.claude/
+/.windsurf/
+/pasta-teste/
