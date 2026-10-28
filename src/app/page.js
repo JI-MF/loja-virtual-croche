@@ -41,7 +41,8 @@ export default function Home(){
 
         <nav className={styles.nav}>
           <a href="#">Início</a>
-          <a href="#">Produtos</a>
+          <a href="#produtos">Produtos</a>
+          <a href="#produtos">Ver todos →</a>
           <a href="#">Categorias</a>
           <a href="#contato">Contato</a>
           <a href="#">Como Comprar</a>
@@ -72,9 +73,12 @@ export default function Home(){
               cuidado e dedicação para você.
             </p>
 
-            <button className={styles.button}>
+            <a
+              href="#produtos"
+              className={styles.button}
+            >
               Ver produtos
-            </button>
+            </a>
 
          </div>
         </section>
@@ -111,7 +115,7 @@ export default function Home(){
 
         {/* PRODUTOS EM DESTAQUE */}
 
-        <section className={styles.products}>
+        <section id="produtos" className={styles.products}>
 
           <div className={styles.sectionTitle}>
 
@@ -120,7 +124,7 @@ export default function Home(){
               <h2>Produtos em destaque</h2>
             </div>
 
-            <a href="#">
+            <a href="/produtos">
               Ver todos →
             </a>
 

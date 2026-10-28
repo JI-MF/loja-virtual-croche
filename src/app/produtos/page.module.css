@@ -1,0 +1,176 @@
+
+.page {
+  min-height: 100vh;
+  padding: 48px 4.5% 80px;
+  background: #faf8f8;
+  color: #333;
+}
+
+.header {
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.voltar {
+  display: block;
+  margin-bottom: 48px;
+  color: #95617d;
+  text-align: left;
+  text-decoration: none;
+}
+
+.voltar:hover {
+  text-decoration: underline;
+}
+
+.subtitle {
+  margin-bottom: 12px;
+  color: #a6698b;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 4px;
+}
+
+.header h1 {
+  margin: 0 0 16px;
+  font-family: Georgia, serif;
+  font-size: clamp(32px, 4vw, 48px);
+}
+
+.description {
+  color: #746b70;
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+.products {
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.quantidade {
+  margin-bottom: 24px;
+  color: #746b70;
+}
+
+.productList {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 36px 28px;
+}
+
+.product {
+  overflow: hidden;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.05);
+}
+
+.productImage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #eee;
+  color: #81777d;
+}
+
+.image {
+  object-fit: cover;
+}
+
+.productInfo {
+  padding: 22px;
+}
+
+.productInfo h2 {
+  margin: 0 0 12px;
+  font-family: Georgia, serif;
+  font-size: 22px;
+}
+
+.price {
+  margin-bottom: 20px;
+  color: #95617d;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.buyButton,
+.whatsappButton {
+  width: 100%;
+  min-height: 44px;
+  padding: 11px 16px;
+  border: 1px solid #a6698b;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.buyButton {
+  background: #a6698b;
+  color: #fff;
+}
+
+.buyButton:hover {
+  background: #89516f;
+}
+
+.whatsappButton {
+  background: #fff;
+  color: #89516f;
+}
+
+.whatsappButton:hover {
+  background: #f5edf1;
+}
+
+.mensagem {
+  padding: 48px 16px;
+  color: #746b70;
+  text-align: center;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .productList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 28px 5% 56px;
+  }
+
+  .header {
+    margin-bottom: 32px;
+  }
+
+  .voltar {
+    margin-bottom: 36px;
+  }
+
+  .description {
+    font-size: 15px;
+  }
+
+  .productList {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .productInfo {
+    padding: 18px;
+  }
+}
