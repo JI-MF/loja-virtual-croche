@@ -63,7 +63,13 @@ export async function criarOrderMercadoPago({
 
     const order = obterServicoOrder();
 
+    const urlBase = process.env.APP_URL?.replace(/\/$/, "");
+
+    if (!urlBase) {
+        throw new Error("A variável APP_URL não está configurada.");
+    }
     const corpo = {
+    
     type: "online",
     processing_mode: "manual",
     total_amount: valorTotal,
@@ -78,6 +84,14 @@ export async function criarOrderMercadoPago({
         quantity: item.quantidade,
         unit_price: Number(item.preco_unitario).toFixed(2),
     })),
+        config: {
+        online: {
+            success_url: `${urlBase}/pedido/resultado?pedido=${pedidoId}&resultado=aprovado`,
+            failure_url: `${urlBase}/pedido/resultado?pedido=${pedidoId}&resultado=recusado`,
+            pending_url: `${urlBase}/pedido/resultado?pedido=${pedidoId}&resultado=pendente`,
+            auto_return: "all",
+        },
+},
 };
 
     console.log("Diagnóstico do comprador:", {

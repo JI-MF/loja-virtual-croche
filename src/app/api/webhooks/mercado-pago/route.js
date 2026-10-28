@@ -1,359 +1,4 @@
 
-// import { NextResponse } from "next/server";
-// import {
-//     WebhookSignatureValidator,
-//     InvalidWebhookSignatureError,
-// } from "mercadopago";
-
-// import { prisma } from "@/lib/prisma";
-// import { consultarOrderMercadoPago } from "@/lib/mercado-pago-service";
-
-// function mapearStatusPagamento(status) {
-//     switch (status) {
-//         case "created":
-//             return "PENDENTE";
-
-//         case "processing":
-//         case "action_required":
-//             return "EM_PROCESSAMENTO";
-
-//         case "processed":
-//             return "APROVADO";
-
-//         case "failed":
-//             return "RECUSADO";
-
-//         case "canceled":
-//             return "CANCELADO";
-
-//         case "refunded":
-//             return "ESTORNADO";
-
-//         case "charged_back":
-//             return "EM_DISPUTA";
-
-//         default:
-//             return null;
-//     }
-// }
-
-
-// function podeAtualizarStatusPagamento(atual, novo) {
-//     if (atual === novo) {
-//         return true;
-//     }
-
-//     const transicoesPermitidas = {
-//         PENDENTE: [
-//             "EM_PROCESSAMENTO",
-//             "APROVADO",
-//             "RECUSADO",
-//             "CANCELADO",
-//         ],
-
-//         EM_PROCESSAMENTO: [
-//             "APROVADO",
-//             "RECUSADO",
-//             "CANCELADO",
-//         ],
-
-//         APROVADO: [
-//             "ESTORNADO",
-//             "EM_DISPUTA",
-//         ],
-
-//         RECUSADO: [],
-
-//         CANCELADO: [],
-
-//         ESTORNADO: [
-//             "EM_DISPUTA",
-//         ],
-
-//         EM_DISPUTA: [
-//             "ESTORNADO",
-//         ],
-//     };
-
-//     return transicoesPermitidas[atual]?.includes(novo) ?? false;
-// }
-
-
-// export async function POST(request) {
-//     const secret = process.env.MERCADO_PAGO_WEBHOOK_SECRET;
-
-//     if (!secret) {
-//         console.error("Chave secreta do webhook não configurada.");
-
-//         return NextResponse.json(
-//             { erro: "Configuração interna indisponível." },
-//             { status: 500 }
-//         );
-//     }
-
-//     const xSignature = request.headers.get("x-signature");
-//     const xRequestId = request.headers.get("x-request-id");
-//     const dataId = request.nextUrl.searchParams.get("data.id");
-//     const tipo = request.nextUrl.searchParams.get("type");
-
-//     if (!xSignature || !xRequestId || !dataId) {
-//         return NextResponse.json(
-//             { erro: "Dados de validação ausentes." },
-//             { status: 400 }
-//         );
-//     }
-
-//     try {
-//         WebhookSignatureValidator.validate({
-//             xSignature,
-//             xRequestId,
-//             dataId,
-//             secret,
-//             toleranceSeconds: 300,
-//         });
-//     } catch (error) {
-//         if (error instanceof InvalidWebhookSignatureError) {
-//             return NextResponse.json(
-//                 { erro: "Assinatura inválida." },
-//                 { status: 401 }
-//             );
-//         }
-
-//         console.error("Falha interna ao validar assinatura.");
-
-//         return NextResponse.json(
-//             { erro: "Não foi possível validar a notificação." },
-//             { status: 500 }
-//         );
-//     }
-
-//     // Esta rota trata somente notificações de ordens.
-//     if (!["order", "orders", "orders_v2"].includes(tipo)) {
-//         return NextResponse.json(
-//             { mensagem: "Tipo de notificação não tratado." },
-//             { status: 200 }
-//         );
-//     }
-
-//     try {
-//         // Consultar o estado atual diretamente no Mercado Pago.
-//         const ordem = await consultarOrderMercadoPago(dataId);
-
-//         // Localizar o pagamento associado a essa ordem.
-//         const pagamento = await prisma.pagamento.findUnique({
-//             where: {
-//                 mercado_pago_order_id: String(dataId),
-//             },
-//             include: {
-//                 pedido: true,
-//             },
-//         });
-
-//         if (!pagamento) {
-//             console.warn(
-//                 "Ordem recebida sem pagamento local correspondente.",
-//                 { dataId }
-//             );
-
-//             // Permite nova tentativa caso o registro ainda não exista.
-//             return NextResponse.json(
-//                 { erro: "Pagamento local não encontrado." },
-//                 { status: 500 }
-//             );
-//         }
-
-//         // Confirmar que a ordem corresponde ao pedido local.
-//         if (
-//             String(ordem.external_reference) !==
-//             String(pagamento.pedido_id)
-//         ) {
-//             console.error("Referência externa não corresponde ao pedido.", {
-//                 dataId,
-//                 pagamentoId: pagamento.id,
-//             });
-
-//             return NextResponse.json(
-//                 { mensagem: "Referência não corresponde ao pedido." },
-//                 { status: 200 }
-//             );
-//         }
-
-//         // Conferir o valor antes de alterar qualquer estado.
-//         const valorMercadoPago = Math.round(
-//             Number(ordem.total_amount) * 100
-//         );
-
-//         const valorLocal = Math.round(
-//             Number(pagamento.valor) * 100
-//         );
-
-//         if (
-//             !Number.isFinite(valorMercadoPago) ||
-//             valorMercadoPago !== valorLocal ||
-//             (ordem.currency_id && ordem.currency_id !== "BRL")
-//         ) {
-//             console.error("Valor ou moeda da ordem não corresponde.", {
-//                 dataId,
-//                 pagamentoId: pagamento.id,
-//             });
-
-//             return NextResponse.json(
-//                 { mensagem: "Dados da ordem precisam ser verificados." },
-//                 { status: 200 }
-//             );
-//         }
-
-        
-//         const novoStatus = mapearStatusPagamento(ordem.status);
-
-//         // Não tratar um reembolso parcial como pagamento integralmente aprovado.
-//         if (
-//             ordem.status === "processed" &&
-//             ordem.status_detail === "partially_refunded"
-//         ) {
-//             console.warn(
-//                 "Ordem com reembolso parcial. Atualização automática de status ignorada.",
-//                 { dataId }
-//             );
-
-//             return NextResponse.json(
-//                 {
-//                     mensagem:
-//                         "Ordem com reembolso parcial; atualização requer análise."
-//                 },
-//                 { status: 200 }
-//             );
-//         }
-
-
-        
-        
-//         // Atualizar pagamento e pedido na mesma transação.
-//         await prisma.$transaction(async (tx) => {
-//             // Buscar o estado mais recente do pagamento.
-//             const pagamentoAtual = await tx.pagamento.findUnique({
-//                 where: {
-//                     id: pagamento.id,
-//                 },
-//             });
-
-//             if (!pagamentoAtual) {
-//                 throw new Error("Pagamento local não encontrado.");
-//             }
-
-//             // Buscar o estado atual do pedido antes de atualizar o pagamento.
-//             const pedidoAtual = await tx.pedido.findUnique({
-//                 where: {
-//                     id: pagamento.pedido_id,
-//                 },
-//             });
-
-//             if (!pedidoAtual) {
-//                 throw new Error("Pedido local não encontrado.");
-//             }
-
-//             // Não aprovar automaticamente um pagamento de pedido cancelado.
-//             if (
-//                 novoStatus === "APROVADO" &&
-//                 pedidoAtual.status === "CANCELADO"
-//             ) {
-//                 console.error(
-//                     "Pagamento aprovado para um pedido cancelado. É necessária análise manual.",
-//                     {
-//                         pagamentoId: pagamentoAtual.id,
-//                         pedidoId: pedidoAtual.id,
-//                         dataId,
-//                     }
-//                 );
-
-//                 return;
-//             }
-
-//             // Não permitir transições de estado inválidas.
-//             const transicaoPermitida = podeAtualizarStatusPagamento(
-//                 pagamentoAtual.status,
-//                 novoStatus
-//             );
-
-//             if (!transicaoPermitida) {
-//                 console.warn("Transição de pagamento ignorada.", {
-//                     pagamentoId: pagamentoAtual.id,
-//                     statusAtual: pagamentoAtual.status,
-//                     statusRecebido: novoStatus,
-//                 });
-
-//                 return;
-//             }
-
-//             // Atualizar somente se o status continuar igual ao consultado.
-//             const resultadoAtualizacao = await tx.pagamento.updateMany({
-//                 where: {
-//                     id: pagamentoAtual.id,
-//                     status: pagamentoAtual.status,
-//                 },
-//                 data: {
-//                     status: novoStatus,
-//                 },
-//             });
-
-//             // Se outra operação alterou o pagamento, não continuar.
-//             if (resultadoAtualizacao.count === 0) {
-//                 console.warn(
-//                     "Pagamento alterado por outra operação. Atualização ignorada.",
-//                     {
-//                         pagamentoId: pagamentoAtual.id,
-//                         statusEsperado: pagamentoAtual.status,
-//                         statusRecebido: novoStatus,
-//                     }
-//                 );
-
-//                 return;
-//             }
-
-//             // Confirmar apenas pedidos que ainda estão pendentes.
-//             if (
-//                 novoStatus === "APROVADO" &&
-//                 pedidoAtual.status === "PENDENTE"
-//             ) {
-//                 await tx.pedido.update({
-//                     where: {
-//                         id: pedidoAtual.id,
-//                     },
-//                     data: {
-//                         status: "CONFIRMADO",
-//                     },
-//                 });
-//             }
-//         });
-
-
-
-//         console.info("Notificação processada.", {
-//             dataId,
-//             statusPagamento: novoStatus,
-//         });
-
-//         return NextResponse.json(
-//             { mensagem: "Notificação processada." },
-//             { status: 200 }
-//         );
-//     } catch (error) {
-//         console.error("Erro ao processar webhook.", {
-//             dataId,
-//             erro: 
-//                 error instanceof Error
-//                     ? error.message
-//                     : "Erro desconhecido",
-//         });
-
-//         return NextResponse.json(
-//             { erro: "Falha ao processar a notificação." },
-//             { status: 500 }
-//         );
-//     }
-// }
-
-
 import { NextResponse } from "next/server";
 import {
     WebhookSignatureValidator,
@@ -537,26 +182,28 @@ export async function POST(request) {
         }
 
         // 4. Conferir o valor desta tentativa e a moeda.
-        const valorMercadoPago = Math.round(
-            Number(ordem.total_amount) * 100
-        );
-
-        const valorTentativa = Math.round(
-            Number(tentativa.valor) * 100
-        );
-
         
+const valorMercadoPago = Math.round(
+    Number(ordem.total_amount) * 100
+);
+
+const valorTentativa = Math.round(
+    Number(tentativa.valor) * 100
+);
+
+const moedaMercadoPago = ordem.currency_id ?? ordem.currency;
+
 if (
     !Number.isFinite(valorMercadoPago) ||
     !Number.isFinite(valorTentativa) ||
     valorMercadoPago !== valorTentativa ||
-    ordem.currency !== "BRL"
+    moedaMercadoPago !== "BRL"
 ) {
     console.error("Valor ou moeda da ordem não corresponde.", {
         dataId,
         pagamentoId: pagamento.id,
         tentativaId: tentativa.id,
-        moedaRecebida: ordem.currency ?? null,
+        moedaRecebida: moedaMercadoPago ?? null,
     });
 
     return NextResponse.json(
@@ -564,6 +211,7 @@ if (
         { status: 200 }
     );
 }
+
 
         const novoStatus = mapearStatusPagamento(ordem.status);
 
@@ -769,55 +417,55 @@ if (
         });
 
         if (resultadoProcessamento?.atualizado === false) {
-            
-            if (novoStatus === "APROVADO") {
-                const pedidoEmail = await prisma.pedido.findUnique({
-                    where: { id: pagamento.pedido_id },
-                    include: {
-                        cliente: true,
-                        item_pedido: {
-                            include: {
-                                produto: true,
-                            },
-                        },
-                    },
-                });
+    console.info("Notificação recebida sem nova atualização.", {
+        dataId,
+        tentativaId: tentativa.id,
+        pagamentoId: pagamento.id,
+        motivo: resultadoProcessamento.motivo,
+    });
+} else {
+    console.info("Notificação processada.", {
+        dataId,
+        tentativaId: tentativa.id,
+        pagamentoId: pagamento.id,
+        statusPagamento: novoStatus,
+    });
+}
 
-                if (
-                    pedidoEmail &&
-                    pedidoEmail.status === "CONFIRMADO" &&
-                    !pedidoEmail.email_confirmacao_enviado
-                ) {
-                    await enviarConfirmacaoPedido(
-                        pedidoEmail.cliente.email,
-                        pedidoEmail
-                    );
+// Enviar confirmação somente para pedidos efetivamente confirmados.
+if (novoStatus === "APROVADO") {
+    const pedidoEmail = await prisma.pedido.findUnique({
+        where: { id: pagamento.pedido_id },
+        include: {
+            cliente: true,
+            item_pedido: {
+                include: {
+                    produto: true,
+                },
+            },
+        },
+    });
 
-                    await prisma.pedido.update({
-                        where: { id: pedidoEmail.id },
-                        data: { email_confirmacao_enviado: true },
-                    });
+    if (
+        pedidoEmail &&
+        pedidoEmail.status === "CONFIRMADO" &&
+        !pedidoEmail.email_confirmacao_enviado
+    ) {
+        await enviarConfirmacaoPedido(
+            pedidoEmail.cliente.email,
+            pedidoEmail
+        );
 
-                    console.info("E-mail de confirmação enviado.", {
-                        pedidoId: pedidoEmail.id,
-                    });
-                }
-            }
+        await prisma.pedido.update({
+            where: { id: pedidoEmail.id },
+            data: { email_confirmacao_enviado: true },
+        });
 
-            console.info("Notificação recebida, mas atualização ignorada.", {
-                dataId,
-                tentativaId: tentativa.id,
-                pagamentoId: pagamento.id,
-                motivo: resultadoProcessamento.motivo,
-            });
-            } else {
-                console.info("Notificação processada.", {
-                    dataId,
-                    tentativaId: tentativa.id,
-                    pagamentoId: pagamento.id,
-                    statusPagamento: novoStatus,
-                });
-            }
+        console.info("E-mail de confirmação enviado.", {
+            pedidoId: pedidoEmail.id,
+        });
+    }
+}
 
         return NextResponse.json(
             { mensagem: "Notificação processada." },
