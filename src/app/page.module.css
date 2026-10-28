@@ -410,39 +410,101 @@
   }
 }
 
+
+/* =========================
+   CONTATO
+   ========================= */
+
 .contact {
   padding: 80px 8%;
+  background-color: #ffffff;
 }
 
 .contactContent {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
 
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 60px;
 
   align-items: start;
 }
 
+.contactText {
+  padding-top: 8px;
+}
+
 .contactText h2 {
-  font-size: 2.5rem;
   margin: 10px 0 20px;
+  font-size: 2.5rem;
+  line-height: 1.2;
+  color: #333333;
 }
 
 .contactText p {
   line-height: 1.6;
+  color: #666666;
 }
 
 @media (max-width: 768px) {
-
-  .contactContent {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
   .contact {
     padding: 60px 6%;
   }
 
+  .contactContent {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+
+  .contactText h2 {
+    font-size: 2rem;
+  }
+}
+
+
+
+.opcoesCompra {
+  padding: 60px 8%;
+  background-color: #f8f3ef;
+}
+
+.opcoesCompraConteudo {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.opcoesCompraConteudo h2 {
+  margin: 12px 0;
+  font-size: 2rem;
+}
+
+.opcoesCompraConteudo > p {
+  margin-bottom: 24px;
+}
+
+.opcoesCompraBotoes {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.opcoesCompraBotoes button {
+  min-width: 220px;
+}
+
+@media (max-width: 600px) {
+  .opcoesCompra {
+    padding: 40px 5%;
+  }
+
+  .opcoesCompraBotoes {
+    flex-direction: column;
+  }
+
+  .opcoesCompraBotoes button {
+    width: 100%;
+  }
 }

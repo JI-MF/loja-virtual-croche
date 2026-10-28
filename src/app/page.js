@@ -11,6 +11,7 @@ export default function Home(){
 
   const [produtos, setProdutos]= useState([]);
   const [produtoSelecionado, setProdutoSelecionado] =useState(null);
+  const [mostrarOpções, setMostrarOpções] = useState(false);
 
   useEffect(() => {
     async function carregarProdutos(){
@@ -157,6 +158,7 @@ export default function Home(){
                 className={styles.button}
                 onClick={() => {
                   setProdutoSelecionado(produto);
+                  setMostrarOpções(true);
 
                   document
                   .getElementById("contato")
@@ -178,6 +180,48 @@ export default function Home(){
         </section>
 
         <section id="contato" className={styles.contact}>
+
+        
+{mostrarOpções && produtoSelecionado && (
+  <section className={styles.opcoesCompra}>
+    <div className={styles.opcoesCompraConteudo}>
+      <p className={styles.subtitle}>VAMOS CONTINUAR?</p>
+
+      <h2>Como deseja prosseguir?</h2>
+
+      <p>
+        Você selecionou: {produtoSelecionado.nome}
+      </p>
+
+      <div className={styles.opcoesCompraBotoes}>
+        <button
+          type="button"
+          className={styles.button}
+          onClick={() => {
+            window.location.href = `/autenticacao?produto=${produtoSelecionado.id}`;
+          }}
+        >
+          Comprar produto
+        </button>
+
+        <button
+          type="button"
+          className={styles.button}
+          onClick={() => {
+            const mensagem = `Olá! Tenho interesse no produto ${produtoSelecionado.nome}. Gostaria de tirar algumas dúvidas.`;
+
+            const url = `https://wa.me/559285040893?text=${encodeURIComponent(mensagem)}`;
+
+            window.open(url, "_blank");
+          }}
+        >
+          Tirar dúvidas pelo WhatsApp
+        </button>
+      </div>
+    </div>
+  </section>
+)}
+
 
           <div className={styles.contactContent}>
 
