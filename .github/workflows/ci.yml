@@ -1,4 +1,4 @@
-﻿name: CI - Producoes da Vick Croche
+name: CI - Producoes da Vick Croche
 
 on:
   push:
@@ -16,6 +16,14 @@ jobs:
     name: Verificar aplicacao
     runs-on: ubuntu-latest
 
+    env:
+      DATABASE_URL: mysql://ci:ci@127.0.0.1:3306/croche_ci
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: ci
+      DB_PASSWORD: ci
+      DB_NAME: croche_ci
+
     steps:
       - name: Baixar codigo do repositorio
         uses: actions/checkout@v6
@@ -28,6 +36,9 @@ jobs:
 
       - name: Instalar dependencias
         run: npm ci
+
+      - name: Gerar cliente Prisma
+        run: npx prisma generate
 
       - name: Executar lint
         run: npm run lint
