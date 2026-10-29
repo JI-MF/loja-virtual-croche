@@ -68,17 +68,18 @@
 
 .productImage {
   position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 1 / 1;
-  overflow: hidden;
-  background: #eee;
-  color: #81777d;
+  background: #fff;
 }
 
 .image {
-  object-fit: cover;
+  object-fit: contain !important;
+  object-position: center;
 }
 
 .productInfo {
