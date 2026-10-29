@@ -12,6 +12,8 @@ export default function Home(){
   const [produtos, setProdutos]= useState([]);
   const [produtoSelecionado, setProdutoSelecionado] =useState(null);
   const [mostrarOpções, setMostrarOpções] = useState(false);
+  const [mensagemWhatsApp, setMensagemWhatsApp] = useState("");
+  const [mostrarCampoWhatsApp, setMostrarCampoWhatsApp] = useState(false);
 
   useEffect(() => {
     async function carregarProdutos(){
@@ -132,7 +134,7 @@ export default function Home(){
 
           <div className={styles.productList}>
 
-            {produtos.map((produto) => (
+            {produtos.slice(0, 3).map((produto) => (
               <article
                 key={produto.id}
                 className={styles.product}
@@ -208,19 +210,54 @@ export default function Home(){
           Comprar produto
         </button>
 
-        <button
-          type="button"
-          className={styles.button}
-          onClick={() => {
-            const mensagem = `Olá! Tenho interesse no produto ${produtoSelecionado.nome}. Gostaria de tirar algumas dúvidas.`;
+        
+<button
+  type="button"
+  className={styles.button}
+  onClick={() => {
+    setMensagemWhatsApp("");
+    setMostrarCampoWhatsApp(true);
+  }}
+>
+  Tirar dúvidas pelo WhatsApp
+</button>
 
-            const url = `https://wa.me/559285040893?text=${encodeURIComponent(mensagem)}`;
+{mostrarCampoWhatsApp && (
+  <div className={styles.formularioWhatsApp}>
+    <label htmlFor="mensagemWhatsApp">
+      Escreva sua dúvida sobre {produtoSelecionado.nome}
+    </label>
 
-            window.open(url, "_blank");
-          }}
-        >
-          Tirar dúvidas pelo WhatsApp
-        </button>
+    <textarea
+      id="mensagemWhatsApp"
+      value={mensagemWhatsApp}
+      onChange={(evento) =>
+        setMensagemWhatsApp(evento.target.value)
+      }
+      placeholder="Digite sua dúvida aqui..."
+      rows={4}
+    />
+
+    <button
+      type="button"
+      className={styles.button}
+      disabled={!mensagemWhatsApp.trim()}
+      onClick={() => {
+        const mensagem =
+          `Olá! Tenho interesse no produto ${produtoSelecionado.nome}.\n\n` +
+          mensagemWhatsApp.trim();
+
+        const url =
+          `https://wa.me/9285040893?text=${encodeURIComponent(mensagem)}`;
+
+        window.open(url, "_blank", "noopener,noreferrer");
+      }}
+    >
+      Continuar no WhatsApp
+    </button>
+  </div>
+)}
+
       </div>
     </div>
   </section>
