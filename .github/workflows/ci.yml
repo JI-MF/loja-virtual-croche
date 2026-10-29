@@ -1,0 +1,36 @@
+﻿name: CI - Producoes da Vick Croche
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  verificar:
+    name: Verificar aplicacao
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar codigo do repositorio
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Executar lint
+        run: npm run lint
+
+      - name: Compilar aplicacao
+        run: npm run build

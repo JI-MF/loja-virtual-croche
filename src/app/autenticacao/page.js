@@ -1,10 +1,10 @@
-
+﻿
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function AutenticacaoPage() {
+function FormularioAutenticacao() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -44,7 +44,7 @@ export default function AutenticacaoPage() {
 
     if (!response.ok) {
       const mensagemErro =
-        resultado.mensagem || "Não foi possível concluir a operação.";
+        resultado.mensagem || "NÃ£o foi possÃ­vel concluir a operaÃ§Ã£o.";
 
       if (response.status === 409) {
         setErro(mensagemErro);
@@ -61,7 +61,7 @@ export default function AutenticacaoPage() {
       return false;
     }
 
-    setMensagem(resultado.mensagem || "Operação realizada com sucesso.");
+    setMensagem(resultado.mensagem || "OperaÃ§Ã£o realizada com sucesso.");
 
     return true;
   }
@@ -88,7 +88,7 @@ export default function AutenticacaoPage() {
       }
     } catch (error) {
       console.error("Erro ao cadastrar cliente:", error);
-      setErro("Não foi possível conectar ao servidor.");
+      setErro("NÃ£o foi possÃ­vel conectar ao servidor.");
     } finally {
       setCarregando(false);
     }
@@ -112,8 +112,8 @@ export default function AutenticacaoPage() {
         setEtapa("codigo");
       }
     } catch (error) {
-      console.error("Erro ao solicitar código:", error);
-      setErro("Não foi possível conectar ao servidor.");
+      console.error("Erro ao solicitar cÃ³digo:", error);
+      setErro("NÃ£o foi possÃ­vel conectar ao servidor.");
     } finally {
       setCarregando(false);
     }
@@ -124,7 +124,7 @@ export default function AutenticacaoPage() {
     limparMensagens();
 
     if (!/^\d{6}$/.test(codigo)) {
-      setErro("Digite um código de seis dígitos.");
+      setErro("Digite um cÃ³digo de seis dÃ­gitos.");
       return;
     }
 
@@ -148,8 +148,8 @@ export default function AutenticacaoPage() {
         router.refresh();
       }
     } catch (error) {
-      console.error("Erro ao validar código:", error);
-      setErro("Não foi possível conectar ao servidor.");
+      console.error("Erro ao validar cÃ³digo:", error);
+      setErro("NÃ£o foi possÃ­vel conectar ao servidor.");
     } finally {
       setCarregando(false);
     }
@@ -159,7 +159,7 @@ export default function AutenticacaoPage() {
     <main style={estilos.pagina}>
       <section style={estilos.cartao}>
         <p style={estilos.subtitulo}>
-          PRODUÇÕES DA VICK CROCHÊ
+          PRODUÃ‡Ã•ES DA VICK CROCHÃŠ
         </p>
 
         <h1 style={estilos.titulo}>
@@ -174,8 +174,8 @@ export default function AutenticacaoPage() {
           {etapa === "cadastro"
             ? "Informe seus dados para continuar sua compra."
             : etapa === "email"
-              ? "Informe o e-mail cadastrado para receber seu código de acesso."
-              : `Digite o código de seis dígitos enviado para ${email}.`}
+              ? "Informe o e-mail cadastrado para receber seu cÃ³digo de acesso."
+              : `Digite o cÃ³digo de seis dÃ­gitos enviado para ${email}.`}
         </p>
 
         {etapa === "cadastro" && (
@@ -247,7 +247,7 @@ export default function AutenticacaoPage() {
               onClick={() => alternarEtapa("email")}
               style={estilos.botaoSecundario}
             >
-              Já tenho cadastro
+              JÃ¡ tenho cadastro
             </button>
           </form>
         )}
@@ -280,7 +280,7 @@ export default function AutenticacaoPage() {
                 ...(carregando ? estilos.botaoDesabilitado : {}),
               }}
             >
-              {carregando ? "Enviando..." : "Enviar código de acesso"}
+              {carregando ? "Enviando..." : "Enviar cÃ³digo de acesso"}
             </button>
 
             <button
@@ -299,7 +299,7 @@ export default function AutenticacaoPage() {
             style={estilos.formulario}
           >
             <label htmlFor="codigo" style={estilos.label}>
-              Código de seis dígitos
+              CÃ³digo de seis dÃ­gitos
             </label>
 
             <input
@@ -325,7 +325,7 @@ export default function AutenticacaoPage() {
                 ...(carregando ? estilos.botaoDesabilitado : {}),
               }}
             >
-              {carregando ? "Verificando..." : "Validar código"}
+              {carregando ? "Verificando..." : "Validar cÃ³digo"}
             </button>
 
             <button
@@ -353,8 +353,8 @@ export default function AutenticacaoPage() {
 
         <p style={estilos.rodape}>
           {produtoId
-            ? "Após confirmar seu e-mail, você poderá continuar para a revisão do produto selecionado."
-            : "Seus dados serão utilizados para identificar sua conta e permitir suas compras."}
+            ? "ApÃ³s confirmar seu e-mail, vocÃª poderÃ¡ continuar para a revisÃ£o do produto selecionado."
+            : "Seus dados serÃ£o utilizados para identificar sua conta e permitir suas compras."}
         </p>
       </section>
     </main>
@@ -458,3 +458,21 @@ const estilos = {
     textAlign: "center",
   },
 };
+
+export default function AutenticacaoPage() {
+  return (
+    <Suspense
+      fallback={
+        <main style={estilos.pagina}>
+          <section style={estilos.cartao}>
+            <p style={estilos.descricao}>
+              Carregando autenticaÃ§Ã£o...
+            </p>
+          </section>
+        </main>
+      }
+    >
+      <FormularioAutenticacao />
+    </Suspense>
+  );
+}
