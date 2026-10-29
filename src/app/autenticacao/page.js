@@ -2,45 +2,117 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function AutenticacaoPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
+  const produtoId = searchParams.get("produto");
+
+  const [etapa, setEtapa] = useState("cadastro");
+  const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
   const [codigo, setCodigo] = useState("");
-  const [etapa, setEtapa] = useState("email");
+
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
 
-  async function solicitarCodigo(event) {
-    event.preventDefault();
+  function limparMensagens() {
     setErro("");
     setMensagem("");
+  }
+
+  function alternarEtapa(novaEtapa) {
+    limparMensagens();
+    setCodigo("");
+    setEtapa(novaEtapa);
+  }
+
+  async function enviarRequisicao(url, dados) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dados),
+    });
+
+    const resultado = await response.json();
+
+    if (!response.ok) {
+      const mensagemErro =
+        resultado.mensagem || "Não foi possível concluir a operação.";
+
+      if (response.status === 409) {
+        setErro(mensagemErro);
+      } else if (resultado.erros?.length) {
+        setErro(
+          resultado.erros
+            .map((item) => item.mensagem)
+            .join(" ")
+        );
+      } else {
+        setErro(mensagemErro);
+      }
+
+      return false;
+    }
+
+    setMensagem(resultado.mensagem || "Operação realizada com sucesso.");
+
+    return true;
+  }
+
+  async function cadastrarCliente(event) {
+    event.preventDefault();
+    limparMensagens();
 
     try {
       setCarregando(true);
 
-      const response = await fetch(
-        "/api/autenticacao/solicitar-codigo",
+      const sucesso = await enviarRequisicao(
+        "/api/autenticacao/cadastro",
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
+          nome,
+          email: email.trim().toLowerCase(),
+          telefone,
         }
       );
 
-      const resultado = await response.json();
-
-      if (!response.ok) {
-        setErro(resultado.mensagem || "Não foi possível solicitar o código.");
-        return;
+      if (sucesso) {
+        setEmail(email.trim().toLowerCase());
+        setEtapa("codigo");
       }
+    } catch (error) {
+      console.error("Erro ao cadastrar cliente:", error);
+      setErro("Não foi possível conectar ao servidor.");
+    } finally {
+      setCarregando(false);
+    }
+  }
 
-      setMensagem(resultado.mensagem);
-      setEtapa("codigo");
-    } catch {
+  async function solicitarCodigo(event) {
+    event.preventDefault();
+    limparMensagens();
+
+    try {
+      setCarregando(true);
+
+      const sucesso = await enviarRequisicao(
+        "/api/autenticacao/solicitar-codigo",
+        {
+          email: email.trim().toLowerCase(),
+        }
+      );
+
+      if (sucesso) {
+        setEtapa("codigo");
+      }
+    } catch (error) {
+      console.error("Erro ao solicitar código:", error);
       setErro("Não foi possível conectar ao servidor.");
     } finally {
       setCarregando(false);
@@ -49,8 +121,7 @@ export default function AutenticacaoPage() {
 
   async function validarCodigo(event) {
     event.preventDefault();
-    setErro("");
-    setMensagem("");
+    limparMensagens();
 
     if (!/^\d{6}$/.test(codigo)) {
       setErro("Digite um código de seis dígitos.");
@@ -60,37 +131,24 @@ export default function AutenticacaoPage() {
     try {
       setCarregando(true);
 
-      const response = await fetch(
+      const sucesso = await enviarRequisicao(
         "/api/autenticacao/validar",
         {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, codigo }),
+          email: email.trim().toLowerCase(),
+          codigo,
         }
       );
 
-      const resultado = await response.json();
+      if (sucesso) {
+        const destino = produtoId
+          ? `/pedido/revisao?produto=${encodeURIComponent(produtoId)}`
+          : "/";
 
-      if (!response.ok) {
-        setErro(resultado.mensagem || "Não foi possível validar o código.");
-        return;
+        router.replace(destino);
+        router.refresh();
       }
-
-      setMensagem("Autenticação realizada com sucesso.");
-
-      // Por enquanto, encaminha para a página inicial.
-      // Depois conectaremos esta etapa à revisão do pedido.
-      const parametros = new URLSearchParams(window.location.search);
-const produtoId = parametros.get("produto");
-
-    if (produtoId) {
-    router.push(`/pedido/revisao?produto=${produtoId}`);
-    } else {
-    router.push("/");
-    }
-
-    router.refresh();
-    } catch {
+    } catch (error) {
+      console.error("Erro ao validar código:", error);
       setErro("Não foi possível conectar ao servidor.");
     } finally {
       setCarregando(false);
@@ -100,23 +158,113 @@ const produtoId = parametros.get("produto");
   return (
     <main style={estilos.pagina}>
       <section style={estilos.cartao}>
-        <p style={estilos.subtitulo}>PRODUÇÕES DA VICK CROCHÊ</p>
-
-        <h1 style={estilos.titulo}>Acesse sua conta</h1>
-
-        <p style={estilos.descricao}>
-          Entre para continuar sua experiência de compra.
+        <p style={estilos.subtitulo}>
+          PRODUÇÕES DA VICK CROCHÊ
         </p>
 
-        {etapa === "email" ? (
-          <form onSubmit={solicitarCodigo} style={estilos.formulario}>
+        <h1 style={estilos.titulo}>
+          {etapa === "cadastro"
+            ? "Crie sua conta"
+            : etapa === "email"
+              ? "Acesse sua conta"
+              : "Confirme seu e-mail"}
+        </h1>
+
+        <p style={estilos.descricao}>
+          {etapa === "cadastro"
+            ? "Informe seus dados para continuar sua compra."
+            : etapa === "email"
+              ? "Informe o e-mail cadastrado para receber seu código de acesso."
+              : `Digite o código de seis dígitos enviado para ${email}.`}
+        </p>
+
+        {etapa === "cadastro" && (
+          <form
+            onSubmit={cadastrarCliente}
+            style={estilos.formulario}
+          >
+            <label htmlFor="nome" style={estilos.label}>
+              Nome completo
+            </label>
+
+            <input
+              id="nome"
+              type="text"
+              autoComplete="name"
+              value={nome}
+              onChange={(event) => setNome(event.target.value)}
+              placeholder="Digite seu nome completo"
+              minLength={3}
+              required
+              style={estilos.campo}
+            />
+
             <label htmlFor="email" style={estilos.label}>
-              E-mail cadastrado
+              E-mail
             </label>
 
             <input
               id="email"
               type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="Digite seu e-mail"
+              required
+              style={estilos.campo}
+            />
+
+            <label htmlFor="telefone" style={estilos.label}>
+              Telefone / WhatsApp
+            </label>
+
+            <input
+              id="telefone"
+              type="tel"
+              autoComplete="tel"
+              value={telefone}
+              onChange={(event) => setTelefone(event.target.value)}
+              placeholder="(92) 99999-9999"
+              required
+              style={estilos.campo}
+            />
+
+            <button
+              type="submit"
+              disabled={carregando}
+              style={{
+                ...estilos.botao,
+                ...(carregando ? estilos.botaoDesabilitado : {}),
+              }}
+            >
+              {carregando
+                ? "Cadastrando..."
+                : "Cadastrar e continuar"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => alternarEtapa("email")}
+              style={estilos.botaoSecundario}
+            >
+              Já tenho cadastro
+            </button>
+          </form>
+        )}
+
+        {etapa === "email" && (
+          <form
+            onSubmit={solicitarCodigo}
+            style={estilos.formulario}
+          >
+            <label htmlFor="email-acesso" style={estilos.label}>
+              E-mail cadastrado
+            </label>
+
+            <input
+              id="email-acesso"
+              type="email"
+              autoComplete="email"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               placeholder="Digite seu e-mail"
@@ -127,17 +275,29 @@ const produtoId = parametros.get("produto");
             <button
               type="submit"
               disabled={carregando}
-              style={estilos.botao}
+              style={{
+                ...estilos.botao,
+                ...(carregando ? estilos.botaoDesabilitado : {}),
+              }}
             >
               {carregando ? "Enviando..." : "Enviar código de acesso"}
             </button>
-          </form>
-        ) : (
-          <form onSubmit={validarCodigo} style={estilos.formulario}>
-            <p style={estilos.descricao}>
-              Informe o código enviado para {email}.
-            </p>
 
+            <button
+              type="button"
+              onClick={() => alternarEtapa("cadastro")}
+              style={estilos.botaoSecundario}
+            >
+              Criar uma conta
+            </button>
+          </form>
+        )}
+
+        {etapa === "codigo" && (
+          <form
+            onSubmit={validarCodigo}
+            style={estilos.formulario}
+          >
             <label htmlFor="codigo" style={estilos.label}>
               Código de seis dígitos
             </label>
@@ -160,22 +320,21 @@ const produtoId = parametros.get("produto");
             <button
               type="submit"
               disabled={carregando}
-              style={estilos.botao}
+              style={{
+                ...estilos.botao,
+                ...(carregando ? estilos.botaoDesabilitado : {}),
+              }}
             >
               {carregando ? "Verificando..." : "Validar código"}
             </button>
 
             <button
               type="button"
-              onClick={() => {
-                setEtapa("email");
-                setCodigo("");
-                setErro("");
-                setMensagem("");
-              }}
+              disabled={carregando}
+              onClick={() => alternarEtapa("email")}
               style={estilos.botaoSecundario}
             >
-              Voltar
+              Voltar ao acesso
             </button>
           </form>
         )}
@@ -193,8 +352,9 @@ const produtoId = parametros.get("produto");
         )}
 
         <p style={estilos.rodape}>
-          Ainda não tem conta? O cadastro de cliente será disponibilizado
-          aqui na próxima etapa.
+          {produtoId
+            ? "Após confirmar seu e-mail, você poderá continuar para a revisão do produto selecionado."
+            : "Seus dados serão utilizados para identificar sua conta e permitir suas compras."}
         </p>
       </section>
     </main>
@@ -217,6 +377,7 @@ const estilos = {
     borderRadius: "12px",
     backgroundColor: "#ffffff",
     boxShadow: "0 8px 30px rgba(0, 0, 0, 0.06)",
+    boxSizing: "border-box",
   },
   subtitulo: {
     color: "#a86f8a",
@@ -265,6 +426,10 @@ const estilos = {
     fontSize: "15px",
     cursor: "pointer",
   },
+  botaoDesabilitado: {
+    opacity: 0.65,
+    cursor: "wait",
+  },
   botaoSecundario: {
     padding: "10px",
     border: "1px solid #dddddd",
@@ -277,11 +442,13 @@ const estilos = {
     marginTop: "16px",
     color: "#287a46",
     fontSize: "14px",
+    lineHeight: 1.5,
   },
   erro: {
     marginTop: "16px",
     color: "#c0392b",
     fontSize: "14px",
+    lineHeight: 1.5,
   },
   rodape: {
     marginTop: "24px",
