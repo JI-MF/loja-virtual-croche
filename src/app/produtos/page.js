@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,36 +10,59 @@ import styles from "./page.module.css";
 
 export default function ProdutosPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const categoriaId = searchParams.get("categoria");
+
   const [produtos, setProdutos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(false);
 
   useEffect(() => {
-    async function carregarProdutos() {
+    async function carregarDados() {
       try {
-        const response = await fetch("/api/produtos");
+        const [resProdutos, resCategorias] = await Promise.all([
+          fetch("/api/produtos"),
+          fetch("/api/categorias"),
+        ]);
 
-        if (!response.ok) {
-          throw new Error("Não foi possível carregar os produtos.");
+        if (!resProdutos.ok || !resCategorias.ok) {
+          throw new Error("Não foi possível carregar os dados.");
         }
 
-        const dados = await response.json();
+        const dadosProdutos = await resProdutos.json();
+        const dadosCategorias = await resCategorias.json();
 
-        if (!Array.isArray(dados)) {
+        if (
+          !Array.isArray(dadosProdutos) ||
+          !Array.isArray(dadosCategorias)
+        ) {
           throw new Error("Resposta inválida da API.");
         }
 
-        setProdutos(dados);
+        setProdutos(dadosProdutos);
+        setCategorias(dadosCategorias);
       } catch (error) {
-        console.error("Erro ao carregar produtos:", error);
+        console.error("Erro ao carregar dados:", error);
         setErro(true);
       } finally {
         setCarregando(false);
       }
     }
 
-    carregarProdutos();
+    carregarDados();
   }, []);
+
+  const categoriaSelecionada = categorias.find(
+    (categoria) => String(categoria.id) === categoriaId
+  );
+
+  const produtosFiltrados = categoriaId
+    ? produtos.filter(
+        (produto) => String(produto.categoria_id) === categoriaId
+      )
+    : produtos;
 
   function comprarProduto(produto) {
     router.push(`/autenticacao?produto=${produto.id}`);
@@ -64,12 +88,23 @@ export default function ProdutosPage() {
 
         <p className={styles.subtitle}>NOSSA COLEÇÃO</p>
 
-        <h1>Todos os produtos</h1>
+        <h1>
+          {categoriaSelecionada
+            ? categoriaSelecionada.nome
+            : "Todos os produtos"}
+        </h1>
 
         <p className={styles.description}>
-          Explore nossas peças de crochê feitas à mão,
-          com cuidado e dedicação.
+          {categoriaSelecionada
+            ? `Confira nossos produtos da categoria ${categoriaSelecionada.nome}.`
+            : "Explore nossas peças de crochê feitas à mão, com cuidado e dedicação."}
         </p>
+
+        {categoriaId && (
+          <Link href="/produtos">
+            Ver todos os produtos
+          </Link>
+        )}
       </header>
 
       <section className={styles.products}>
@@ -82,21 +117,25 @@ export default function ProdutosPage() {
             Não foi possível carregar os produtos.
             Tente novamente mais tarde.
           </p>
-        ) : produtos.length === 0 ? (
+        ) : categoriaId && !categoriaSelecionada ? (
           <p className={styles.mensagem}>
-            Nenhum produto disponível no momento.
+            Categoria não encontrada.
+          </p>
+        ) : produtosFiltrados.length === 0 ? (
+          <p className={styles.mensagem}>
+            Nenhum produto encontrado nesta categoria.
           </p>
         ) : (
           <>
             <p className={styles.quantidade}>
-              {produtos.length}{" "}
-              {produtos.length === 1
+              {produtosFiltrados.length}{" "}
+              {produtosFiltrados.length === 1
                 ? "produto encontrado"
                 : "produtos encontrados"}
             </p>
 
             <div className={styles.productList}>
-              {produtos.map((produto) => (
+              {produtosFiltrados.map((produto) => (
                 <article
                   key={produto.id}
                   className={styles.product}

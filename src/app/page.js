@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./page.module.css";
 import CadastroForm from "@/components/cadastro-form";
@@ -9,27 +9,40 @@ import CadastroForm from "@/components/cadastro-form";
 
 export default function Home(){
 
+  const router = useRouter();
   const [produtos, setProdutos]= useState([]);
   const [produtoSelecionado, setProdutoSelecionado] =useState(null);
   const [mostrarOpções, setMostrarOpções] = useState(false);
   const [mensagemWhatsApp, setMensagemWhatsApp] = useState("");
   const [mostrarCampoWhatsApp, setMostrarCampoWhatsApp] = useState(false);
+  const [categorias, setCategorias] = useState([]);
 
   useEffect(() => {
-    async function carregarProdutos(){
-      try{
-        const response = await fetch ("/api/produtos");
+  async function carregarProdutos() {
+    try {
+      const response = await fetch("/api/produtos");
+      const dados = await response.json();
 
-        const dados = await response.json();
-
-        setProdutos(dados);
-      }
-      catch(error){
-        console.error("Erro ao carregar os produtos:",error);
-      }
+      setProdutos(dados);
+    } catch (error) {
+      console.error("Erro ao carregar os produtos:", error);
     }
-    carregarProdutos();
-  },[]);
+  }
+
+  async function carregarCategorias() {
+    try {
+      const response = await fetch("/api/categorias");
+      const dados = await response.json();
+
+      setCategorias(dados);
+    } catch (error) {
+      console.error("Erro ao carregar categorias:", error);
+    }
+  }
+
+  carregarProdutos();
+  carregarCategorias();
+}, []);
   return(
     <div className={styles.page}>
       <header className={styles.header}>
@@ -65,9 +78,9 @@ export default function Home(){
             </p>
 
             <h1>
-              Peças feitas à mão.
+              Vickê: Peças de crochê feitas com carinho e dedicação
               <br />
-              Do seu jeito.
+              do seu jeito.
             </h1>
 
             <p className={styles.description}>
@@ -90,27 +103,16 @@ export default function Home(){
           <h2>Categorias</h2>
 
           <div className={styles.categoryList}>
-
-            <div className={styles.category}>
-              <span>01</span>
-              <h3>Bolsas</h3>
-            </div>
-
-            <div className={styles.category}>
-              <span>02</span>
-              <h3>Roupas</h3>
-            </div>
-
-            <div className={styles.category}>
-              <span>03</span>
-              <h3>Amigurumis</h3>
-            </div>
-
-            <div className={styles.category}>
-              <span>04</span>
-              <h3>Acessórios</h3>
-            </div>
-
+            {categorias.map((categoria, index) => (
+              <a
+                href={`/produtos?categoria=${categoria.id}`}
+                className={styles.category}
+                key={categoria.id}
+              >
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{categoria.nome}</h3>
+              </a>
+            ))}
           </div>
 
         </section>
@@ -204,7 +206,7 @@ export default function Home(){
           type="button"
           className={styles.button}
           onClick={() => {
-            window.location.href = `/autenticacao?produto=${produtoSelecionado.id}`;
+            router.push(`/autenticacao?produto=${produtoSelecionado.id}`);
           }}
         >
           Comprar produto
