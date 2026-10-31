@@ -44,7 +44,7 @@ function FormularioAutenticacao() {
 
     if (!response.ok) {
       const mensagemErro =
-        resultado.mensagem || "NÃ£o foi possÃ­vel concluir a operaÃ§Ã£o.";
+        resultado.mensagem || "Não foi possível concluir a operação.";
 
       if (response.status === 409) {
         setErro(mensagemErro);
@@ -61,7 +61,7 @@ function FormularioAutenticacao() {
       return false;
     }
 
-    setMensagem(resultado.mensagem || "OperaÃ§Ã£o realizada com sucesso.");
+    setMensagem(resultado.mensagem || "Operação realizada com sucesso.");
 
     return true;
   }
@@ -88,7 +88,7 @@ function FormularioAutenticacao() {
       }
     } catch (error) {
       console.error("Erro ao cadastrar cliente:", error);
-      setErro("NÃ£o foi possÃ­vel conectar ao servidor.");
+      setErro("Não foi possível conectar ao servidor.");
     } finally {
       setCarregando(false);
     }
@@ -112,8 +112,8 @@ function FormularioAutenticacao() {
         setEtapa("codigo");
       }
     } catch (error) {
-      console.error("Erro ao solicitar cÃ³digo:", error);
-      setErro("NÃ£o foi possÃ­vel conectar ao servidor.");
+      console.error("Erro ao solicitar códgio:", error);
+      setErro("Não foi possível conectar ao servidor.");
     } finally {
       setCarregando(false);
     }
@@ -124,7 +124,7 @@ function FormularioAutenticacao() {
     limparMensagens();
 
     if (!/^\d{6}$/.test(codigo)) {
-      setErro("Digite um cÃ³digo de seis dÃ­gitos.");
+      setErro("Digite um código de seis dígitos.");
       return;
     }
 
@@ -148,8 +148,8 @@ function FormularioAutenticacao() {
         router.refresh();
       }
     } catch (error) {
-      console.error("Erro ao validar cÃ³digo:", error);
-      setErro("NÃ£o foi possÃ­vel conectar ao servidor.");
+      console.error("Erro ao validar códgio:", error);
+      setErro("Não foi possível conectar ao servidor.");
     } finally {
       setCarregando(false);
     }
@@ -159,7 +159,7 @@ function FormularioAutenticacao() {
     <main style={estilos.pagina}>
       <section style={estilos.cartao}>
         <p style={estilos.subtitulo}>
-          PRODUÃ‡Ã•ES DA VICK CROCHÃŠ
+          PRODUÇÕES DA VICK CROCHÊ
         </p>
 
         <h1 style={estilos.titulo}>
@@ -174,8 +174,8 @@ function FormularioAutenticacao() {
           {etapa === "cadastro"
             ? "Informe seus dados para continuar sua compra."
             : etapa === "email"
-              ? "Informe o e-mail cadastrado para receber seu cÃ³digo de acesso."
-              : `Digite o cÃ³digo de seis dÃ­gitos enviado para ${email}.`}
+              ? "Informe o e-mail cadastrado para receber seu códgio de acesso."
+              : `Digite o códgio de seis dígitos enviado para ${email}.`}
         </p>
 
         {etapa === "cadastro" && (
@@ -247,7 +247,7 @@ function FormularioAutenticacao() {
               onClick={() => alternarEtapa("email")}
               style={estilos.botaoSecundario}
             >
-              JÃ¡ tenho cadastro
+              Já tenho cadastro
             </button>
           </form>
         )}
@@ -280,7 +280,7 @@ function FormularioAutenticacao() {
                 ...(carregando ? estilos.botaoDesabilitado : {}),
               }}
             >
-              {carregando ? "Enviando..." : "Enviar cÃ³digo de acesso"}
+              {carregando ? "Enviando..." : "Enviar código de acesso"}
             </button>
 
             <button
@@ -299,7 +299,7 @@ function FormularioAutenticacao() {
             style={estilos.formulario}
           >
             <label htmlFor="codigo" style={estilos.label}>
-              CÃ³digo de seis dÃ­gitos
+              Código de seis dígitos
             </label>
 
             <input
@@ -325,7 +325,7 @@ function FormularioAutenticacao() {
                 ...(carregando ? estilos.botaoDesabilitado : {}),
               }}
             >
-              {carregando ? "Verificando..." : "Validar cÃ³digo"}
+              {carregando ? "Verificando..." : "Validar código"}
             </button>
 
             <button
@@ -353,8 +353,8 @@ function FormularioAutenticacao() {
 
         <p style={estilos.rodape}>
           {produtoId
-            ? "ApÃ³s confirmar seu e-mail, vocÃª poderÃ¡ continuar para a revisÃ£o do produto selecionado."
-            : "Seus dados serÃ£o utilizados para identificar sua conta e permitir suas compras."}
+            ? "Após confirmar seu e-mail, você poderá continuar para a revisão do produto selecionado."
+            : "Seus dados serão utilizados para identificar sua conta e permitir suas compras."}
         </p>
       </section>
     </main>
@@ -466,7 +466,7 @@ export default function AutenticacaoPage() {
         <main style={estilos.pagina}>
           <section style={estilos.cartao}>
             <p style={estilos.descricao}>
-              Carregando autenticaÃ§Ã£o...
+              Carregando autenticação...
             </p>
           </section>
         </main>
