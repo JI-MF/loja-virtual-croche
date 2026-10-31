@@ -78,6 +78,7 @@ export async function POST(request) {
     const xSignature = request.headers.get("x-signature");
     const xRequestId = request.headers.get("x-request-id");
     const dataId = request.nextUrl.searchParams.get("data.id");
+    const dataIdAssinatura = dataId?.toLowerCase();
     const tipo = request.nextUrl.searchParams.get("type");
 
     if (!xSignature || !xRequestId || !dataId) {
@@ -92,7 +93,7 @@ export async function POST(request) {
         WebhookSignatureValidator.validate({
             xSignature,
             xRequestId,
-            dataId,
+            dataId: dataIdAssinatura,
             secret,
             toleranceSeconds: 300,
         });
