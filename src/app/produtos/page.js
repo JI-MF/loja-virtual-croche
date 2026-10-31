@@ -2,13 +2,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense ,useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
 import styles from "./page.module.css";
 
-export default function ProdutosPage() {
+function ProdutosConteudo() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -189,5 +189,21 @@ export default function ProdutosPage() {
         )}
       </section>
     </main>
+  );
+}
+
+export default function ProdutosPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className={styles.page}>
+          <p className={styles.mensagem}>
+            Carregando produtos...
+          </p>
+        </main>
+      }
+    >
+      <ProdutosConteudo />
+    </Suspense>
   );
 }
