@@ -52,8 +52,9 @@ export async function POST(request) {
     });
 
     // 4. Solicitar o código de confirmação por e-mail.
+    let dadosOTP;
     try {
-      await solicitarOTPCliente(cliente.id);
+      dadosOTP = await solicitarOTPCliente(cliente.id);
     } catch (erro) {
       // Se não for possível enviar o OTP, não deixamos
       // um cadastro incompleto para o usuário tentar repetir.
@@ -68,6 +69,7 @@ export async function POST(request) {
       {
         mensagem:
           "Cadastro realizado. Confira seu e-mail para obter o código de confirmação.",
+          ...dadosOTP,
       },
       { status: 201 }
     );

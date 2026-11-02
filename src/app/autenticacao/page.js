@@ -1,24 +1,48 @@
 ﻿
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect , useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 function FormularioAutenticacao() {
   const router = useRouter();
   const searchParams = useSearchParams();
-
   const produtoId = searchParams.get("produto");
-
   const [etapa, setEtapa] = useState("cadastro");
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [telefone, setTelefone] = useState("");
   const [codigo, setCodigo] = useState("");
-
   const [mensagem, setMensagem] = useState("");
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
+  const [expiraEm, setExpiraEm] = useState(null);
+  const [reenviarEm, setReenviarEm] = useState(null);
+  const [tempoAtual, setTempoAtual] = useState(0);
+
+  useEffect(() => {
+  if (etapa !== "codigo") return;
+
+  const intervalo = setInterval(() => {
+    setTempoAtual(Date.now());
+  }, 1000);
+
+  return () => clearInterval(intervalo);
+}, [etapa]);
+  const segundosExpiracao = expiraEm
+    ? Math.max(0, Math.ceil((new Date(expiraEm).getTime() - tempoAtual) / 1000))
+    : 0;
+
+  const segundosReenvio = reenviarEm
+    ? Math.max(0, Math.ceil((new Date(reenviarEm).getTime() - tempoAtual) / 1000))
+    : 0;
+
+  function formatarTempo(segundos) {
+    const minutos = Math.floor(segundos / 60);
+    const restante = segundos % 60;
+
+    return `${String(minutos).padStart(2, "0")}:${String(restante).padStart(2, "0")}`;
+  }
 
   function limparMensagens() {
     setErro("");
@@ -63,6 +87,16 @@ function FormularioAutenticacao() {
 
     setMensagem(resultado.mensagem || "Operação realizada com sucesso.");
 
+    if (resultado.expiraEm) {
+      setExpiraEm(resultado.expiraEm);
+    }
+
+    if (resultado.reenviarEm) {
+      setReenviarEm(resultado.reenviarEm);
+    }
+
+    setTempoAtual(Date.now());
+
     return true;
   }
 
@@ -95,7 +129,7 @@ function FormularioAutenticacao() {
   }
 
   async function solicitarCodigo(event) {
-    event.preventDefault();
+    event?.preventDefault();
     limparMensagens();
 
     try {
@@ -317,6 +351,7 @@ function FormularioAutenticacao() {
               style={estilos.campo}
             />
 
+            {/* Botão para validar o código */}
             <button
               type="submit"
               disabled={carregando}
@@ -328,6 +363,48 @@ function FormularioAutenticacao() {
               {carregando ? "Verificando..." : "Validar código"}
             </button>
 
+            
+              {/* Painel de expiração do código */}
+              <div style={estilos.painelExpiracao}>
+                <span style={estilos.textoExpiracao}>
+                  {segundosExpiracao > 0
+                    ? "Seu código expira em"
+                    : "Seu código expirou"}
+                </span>
+
+                {segundosExpiracao > 0 && (
+                  <strong
+                    style={{
+                      ...estilos.tempoExpiracao,
+                      ...(segundosExpiracao <= 60
+                        ? estilos.tempoExpiracaoUrgente
+                        : {}),
+                    }}
+                  >
+                    {formatarTempo(segundosExpiracao)}
+                  </strong>
+                )}
+              </div>
+
+              {/* Reenvio do código */}
+              <button
+                type="button"
+                disabled={carregando || segundosReenvio > 0}
+                onClick={solicitarCodigo}
+                style={{
+                  ...estilos.botaoReenvio,
+                  ...(carregando || segundosReenvio > 0
+                    ? estilos.botaoReenvioDesabilitado
+                    : {}),
+                }}
+              >
+                {segundosReenvio > 0
+                  ? `Aguarde ${formatarTempo(segundosReenvio)} para reenviar`
+                  : "Não recebeu o código? Reenviar"}
+              </button>
+
+
+            {/* Voltar ao acesso */}
             <button
               type="button"
               disabled={carregando}
@@ -457,6 +534,54 @@ const estilos = {
     lineHeight: 1.5,
     textAlign: "center",
   },
+  contador: {
+    margin: "8px 0",
+    color: "#666666",
+    fontSize: "14px",
+    textAlign: "center",
+  },
+  painelExpiracao: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "6px",
+    padding: "16px",
+    marginTop: "4px",
+    backgroundColor: "#faf6f8",
+    border: "1px solid #f0e3e9",
+    borderRadius: "8px",
+  },
+
+textoExpiracao: {
+  color: "#777777",
+  fontSize: "13px",
+},
+
+tempoExpiracao: {
+  color: "#a86f8a",
+  fontSize: "24px",
+  fontWeight: "600",
+  fontVariantNumeric: "tabular-nums",
+},
+
+tempoExpiracaoUrgente: {
+  color: "#c0392b",
+},
+
+botaoReenvio: {
+  padding: "8px",
+  border: "none",
+  backgroundColor: "transparent",
+  color: "#a86f8a",
+  fontSize: "14px",
+  fontWeight: "600",
+  cursor: "pointer",
+},
+
+botaoReenvioDesabilitado: {
+  color: "#999999",
+  cursor: "not-allowed",
+},
 };
 
 export default function AutenticacaoPage() {

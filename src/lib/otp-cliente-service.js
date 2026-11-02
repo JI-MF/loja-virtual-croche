@@ -70,10 +70,16 @@ export async function solicitarOTPCliente(clienteId) {
     throw error;
   }
 
-  // Não retorna o código nem seu hash.
-  return {
-    mensagem: "Código enviado para o e-mail cadastrado.",
-  };
+  // Retorna somente os horários, nunca o código ou seu hash.
+      const reenviarEm = new Date(
+        novoOTP.criado_em.getTime() + 60 * 1000
+      );
+
+      return {
+        mensagem: "Código enviado para o e-mail cadastrado.",
+        expiraEm: novoOTP.expira_em.toISOString(),
+        reenviarEm: reenviarEm.toISOString(),
+      };
 }
 
 // Compara os hashes sem comparação textual de tempo variável.

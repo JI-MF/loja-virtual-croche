@@ -50,13 +50,14 @@ export async function POST(request) {
     }
 
     // 4. Solicitar o OTP usando o serviço existente.
-    await solicitarOTPCliente(cliente.id);
+    const dadosOTP = await solicitarOTPCliente(cliente.id);
 
     // 5. Retornar uma resposta sem expor o código.
     return NextResponse.json(
       {
         mensagem:
           "Se o e-mail estiver cadastrado, você receberá um código.",
+        ...dadosOTP,
       },
       { status: 200 }
     );
