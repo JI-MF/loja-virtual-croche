@@ -58,6 +58,7 @@ export async function GET(request, { params }) {
         status: true,
         valor_total: true,
         data_pedido: true,
+        email_confirmacao_enviado: true,
         item_pedido: {
           select: {
             quantidade: true,
