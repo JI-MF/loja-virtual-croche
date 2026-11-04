@@ -2,7 +2,7 @@ const transicoesPermitidas = {
     PENDENTE : ["CONFIRMADO", "CANCELADO"],
     CONFIRMADO : ["ENVIADO"],
     ENVIADO : ["ENTREGUE"],
-    ENTRGUE : [],
+    ENTREGUE : [],
     CANCELADO : []
 };
 
