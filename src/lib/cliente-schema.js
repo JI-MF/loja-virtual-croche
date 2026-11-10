@@ -23,4 +23,11 @@ telefone: z
   )
   .transform((telefone) => telefone.replace(/\D/g, "")),
 
+  produto_id: z.coerce
+  .number()
+  .int()
+  .positive()
+  .nullable()
+  .optional(),
+
 });

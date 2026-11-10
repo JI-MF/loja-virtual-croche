@@ -113,6 +113,7 @@ function FormularioAutenticacao() {
           nome,
           email: email.trim().toLowerCase(),
           telefone,
+          produto_id: produtoId ? Number(produtoId) : null,
         }
       );
 

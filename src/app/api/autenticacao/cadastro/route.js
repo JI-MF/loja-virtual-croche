@@ -1,6 +1,5 @@
 
 import { NextResponse } from "next/server";
-
 import { prisma } from "@/lib/prisma";
 import { cadastroClienteSchema } from "@/lib/cliente-schema";
 import { solicitarOTPCliente } from "@/lib/otp-cliente-service";
@@ -8,8 +7,6 @@ import { solicitarOTPCliente } from "@/lib/otp-cliente-service";
 export async function POST(request) {
   try {
     const dados = await request.json();
-
-    // 1. Validar os dados recebidos.
     const validacao = cadastroClienteSchema.safeParse(dados);
 
     if (!validacao.success) {
@@ -25,9 +22,8 @@ export async function POST(request) {
       );
     }
 
-    const { nome, email, telefone } = validacao.data;
+    const { nome, email, telefone, produto_id } = validacao.data;
 
-    // 2. Verificar se o e-mail já está cadastrado.
     const clienteExistente = await prisma.cliente.findUnique({
       where: { email },
     });
@@ -35,52 +31,99 @@ export async function POST(request) {
     if (clienteExistente) {
       return NextResponse.json(
         {
-          mensagem:
-            "Este e-mail já possui cadastro. Acesse a tela de login.",
+          mensagem: "Este e-mail já possui cadastro. Acesse a tela de login.",
         },
         { status: 409 }
       );
     }
 
-    // 3. Criar o cliente.
-    const cliente = await prisma.cliente.create({
-      data: {
-        nome,
-        email,
-        telefone,
-      },
+    let cliente;
+    let contatoCriado = null;
+
+    // Cria o cliente e, quando houver produto associado,
+    // registra também o interesse na tabela de contatos.
+    const resultado = await prisma.$transaction(async (tx) => {
+      if (produto_id != null) {
+        const produto = await tx.produto.findUnique({
+          where: { id: produto_id },
+        });
+
+        if (!produto) {
+          throw new Error("PRODUTO_NAO_ENCONTRADO");
+        }
+      }
+
+      const novoCliente = await tx.cliente.create({
+        data: { nome, email, telefone },
+      });
+
+      let novoContato = null;
+
+      if (produto_id != null) {
+        const produto = await tx.produto.findUnique({
+          where: { id: produto_id },
+        });
+
+        novoContato = await tx.contato.create({
+          data: {
+            nome,
+            email,
+            telefone,
+            mensagem: `Interesse no produto: ${produto.nome}`,
+            produto_id,
+          },
+        });
+      }
+
+      return {
+        cliente: novoCliente,
+        contato: novoContato,
+      };
     });
 
-    // 4. Solicitar o código de confirmação por e-mail.
-    let dadosOTP;
+    cliente = resultado.cliente;
+    contatoCriado = resultado.contato;
+
+    // Mantém o fluxo atual de envio do código OTP.
     try {
-      dadosOTP = await solicitarOTPCliente(cliente.id);
+      const dadosOTP = await solicitarOTPCliente(cliente.id);
+
+      return NextResponse.json(
+        {
+          mensagem:
+            "Cadastro realizado. Confira seu e-mail para obter o código de confirmação.",
+          ...dadosOTP,
+        },
+        { status: 201 }
+      );
     } catch (erro) {
-      // Se não for possível enviar o OTP, não deixamos
-      // um cadastro incompleto para o usuário tentar repetir.
-      await prisma.cliente.delete({
-        where: { id: cliente.id },
+      // Se o envio do OTP falhar, desfaz os registros criados.
+      await prisma.$transaction(async (tx) => {
+        if (contatoCriado) {
+          await tx.contato.delete({
+            where: { id: contatoCriado.id },
+          });
+        }
+
+        await tx.cliente.delete({
+          where: { id: cliente.id },
+        });
       });
 
       throw erro;
     }
-
-    return NextResponse.json(
-      {
-        mensagem:
-          "Cadastro realizado. Confira seu e-mail para obter o código de confirmação.",
-          ...dadosOTP,
-      },
-      { status: 201 }
-    );
   } catch (erro) {
     console.error("Erro ao cadastrar cliente:", erro);
 
+    if (erro.message === "PRODUTO_NAO_ENCONTRADO") {
+      return NextResponse.json(
+        { mensagem: "O produto selecionado não foi encontrado." },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(
-      {
-        mensagem:
-          "Não foi possível concluir o cadastro. Tente novamente.",
-      },
+      { mensagem: "Não foi possível concluir o cadastro. Tente novamente." },
       { status: 500 }
     );
   }
