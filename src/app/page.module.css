@@ -547,3 +547,38 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 25px 8%;
+  background-color: #f8f5f1;
+  border-top: 1px solid #e8ded5;
+  color: #6b625c;
+  font-size: 14px;
+}
+
+.adminLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b625c;
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.3s ease;
+}
+
+.adminLink:hover {
+  color: #9b6b50;
+  text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+  .footer {
+    flex-direction: column;
+    text-align: center;
+    padding: 25px 5%;
+  }
+}

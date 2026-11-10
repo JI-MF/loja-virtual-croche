@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import styles from "./page.module.css";
 import CadastroForm from "@/components/cadastro-form";
-
+import Link from "next/link";
 
 export default function Home(){
 
@@ -290,6 +290,22 @@ export default function Home(){
       </section>
 
       </main>
+
+      <footer className={styles.footer}>
+        <p>
+          © {new Date().getFullYear()} Produções da Vick Crochê.
+          Todos os direitos reservados.
+        </p>
+
+        <Link
+          href="/admin/login"
+          className={styles.adminLink}
+        >
+          <span aria-hidden="true">🔒</span>
+          Acesso administrativo
+        </Link>
+      </footer>
+
      </div>
   )
 }
