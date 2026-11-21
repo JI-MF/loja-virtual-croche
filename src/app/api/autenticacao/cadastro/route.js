@@ -31,7 +31,8 @@ export async function POST(request) {
     if (clienteExistente) {
       return NextResponse.json(
         {
-          mensagem: "Este e-mail já possui cadastro. Acesse a tela de login.",
+          mensagem:
+            "Este e-mail já possui cadastro. Acesse a tela de login.",
         },
         { status: 409 }
       );
@@ -43,8 +44,10 @@ export async function POST(request) {
     // Cria o cliente e, quando houver produto associado,
     // registra também o interesse na tabela de contatos.
     const resultado = await prisma.$transaction(async (tx) => {
+      let produto = null;
+
       if (produto_id != null) {
-        const produto = await tx.produto.findUnique({
+        produto = await tx.produto.findUnique({
           where: { id: produto_id },
         });
 
@@ -59,11 +62,7 @@ export async function POST(request) {
 
       let novoContato = null;
 
-      if (produto_id != null) {
-        const produto = await tx.produto.findUnique({
-          where: { id: produto_id },
-        });
-
+      if (produto) {
         novoContato = await tx.contato.create({
           data: {
             nome,
@@ -84,7 +83,7 @@ export async function POST(request) {
     cliente = resultado.cliente;
     contatoCriado = resultado.contato;
 
-    // Mantém o fluxo atual de envio do código OTP.
+    // Solicita o OTP somente após a criação do cliente.
     try {
       const dadosOTP = await solicitarOTPCliente(cliente.id);
 
@@ -97,7 +96,7 @@ export async function POST(request) {
         { status: 201 }
       );
     } catch (erro) {
-      // Se o envio do OTP falhar, desfaz os registros criados.
+      // Se a solicitação do OTP falhar, desfaz os registros criados.
       await prisma.$transaction(async (tx) => {
         if (contatoCriado) {
           await tx.contato.delete({
@@ -117,13 +116,18 @@ export async function POST(request) {
 
     if (erro.message === "PRODUTO_NAO_ENCONTRADO") {
       return NextResponse.json(
-        { mensagem: "O produto selecionado não foi encontrado." },
+        {
+          mensagem: "O produto selecionado não foi encontrado.",
+        },
         { status: 404 }
       );
     }
 
     return NextResponse.json(
-      { mensagem: "Não foi possível concluir o cadastro. Tente novamente." },
+      {
+        mensagem:
+          "Não foi possível concluir o cadastro. Tente novamente.",
+      },
       { status: 500 }
     );
   }

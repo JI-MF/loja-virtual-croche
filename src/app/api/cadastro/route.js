@@ -1,3 +1,4 @@
+
 import { criarOTP } from "@/lib/otp-service";
 
 import { cadastroSchema } from "@/lib/cadastro-schema";
@@ -26,20 +27,26 @@ export async function POST(request) {
       );
     }
 
-    const produto = await prisma.produto.findUnique({
-      where: {
-        id: resultado.data.produto_id,
-      },
-    });
+    // O produto é opcional no cadastro de leads.
+    const produtoId = resultado.data.produto_id ?? null;
 
-    if (!produto){
-      return Response.json({
-        erro: "Produto não encontrado",
-      },
-    {
-      status: 404,
-    }
-    );
+    if (produtoId !== null) {
+      const produto = await prisma.produto.findUnique({
+        where: {
+          id: produtoId,
+        },
+      });
+
+      if (!produto) {
+        return Response.json(
+          {
+            erro: "Produto não encontrado",
+          },
+          {
+            status: 404,
+          }
+        );
+      }
     }
 
     const contato = await prisma.contato.create({
@@ -48,7 +55,7 @@ export async function POST(request) {
         email: resultado.data.email,
         telefone: resultado.data.telefone,
         mensagem: resultado.data.mensagem,
-        produto_id: resultado.data.produto_id,
+        produto_id: produtoId,
       },
     });
 

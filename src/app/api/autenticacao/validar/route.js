@@ -7,7 +7,19 @@ import { criarSessaoCliente } from "@/lib/sessao-cliente-service";
 
 export async function POST(request) {
   try {
-    const dados = await request.json();
+    
+    let dados = {};
+
+    try {
+      dados = await request.json();
+    } catch {
+      return NextResponse.json(
+        { mensagem: "Envie um JSON válido." },
+        { status: 400 }
+      );
+    }
+
+    
 
     const email =
       typeof dados.email === "string"
