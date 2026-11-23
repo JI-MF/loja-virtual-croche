@@ -1,61 +1,103 @@
-
 # Produções da Vick Crochê
 
-Aplicação web para a loja **Produções da Vick Crochê**, desenvolvida para apresentar produtos artesanais de crochê e oferecer recursos para o atendimento aos clientes e o gerenciamento de pedidos.
+Aplicação web para a loja **Produções da Vick Crochê**, desenvolvida para apresentar produtos artesanais de crochê e oferecer recursos para atendimento aos clientes, gerenciamento de pedidos e processamento de pagamentos.
 
-O projeto está sendo desenvolvido com Next.js, React, Prisma e MySQL, incluindo funcionalidades de cadastro e autenticação de clientes, gerenciamento de pedidos e integração com o Mercado Pago.
+O projeto utiliza Next.js, React, Prisma ORM e MySQL, incluindo funcionalidades de catálogo de produtos, cadastro e autenticação de clientes, gerenciamento de pedidos, administração da loja e integração com o Mercado Pago.
 
 ## Objetivos do projeto
 
 - Apresentar os produtos da loja de forma organizada.
 - Facilitar o contato entre clientes e a loja.
 - Implementar o cadastro e a autenticação de clientes.
-- Permitir a criação e o acompanhamento de pedidos.
+- Permitir a criação, consulta e cancelamento de pedidos.
 - Integrar o processo de pagamento ao Mercado Pago.
-- Utilizar boas práticas de desenvolvimento e organização de código.
+- Disponibilizar funcionalidades administrativas para gerenciamento da loja.
+- Utilizar boas práticas de desenvolvimento, segurança e organização de código.
 
 ## Tecnologias utilizadas
 
 - **Next.js:** framework para desenvolvimento da aplicação web e das rotas da API.
-- **React:** construção das interfaces.
+- **React:** biblioteca para construção das interfaces.
 - **JavaScript:** linguagem utilizada no desenvolvimento.
 - **Tailwind CSS:** estilização das interfaces.
 - **Base UI:** componentes de interface.
 - **Lucide React:** biblioteca de ícones.
-- **Prisma ORM:** acesso e interação com o banco de dados.
-- **MySQL:** sistema de gerenciamento do banco de dados.
+- **Prisma ORM:** ORM para acesso e gerenciamento do banco de dados.
+- **MySQL:** sistema de gerenciamento de banco de dados (SGBD).
+- **@prisma/adapter-mariadb:** adaptador utilizado na conexão do Prisma com o MySQL.
 - **Mercado Pago SDK:** integração com os serviços de pagamento.
 - **Zod:** validação de dados.
 - **React Hook Form:** gerenciamento de formulários.
-- **Nodemailer:** dependência instalada para funcionalidades de envio de e-mails.
+- **Nodemailer:** envio de e-mails.
+- **bcryptjs:** criptografia de senhas.
+- **Vitest:** framework para execução de testes automatizados.
+- **V8 Coverage:** ferramenta para análise de cobertura de testes.
 
 ## Funcionalidades
 
-O projeto contempla o desenvolvimento das seguintes funcionalidades:
+### Loja e catálogo
 
 - [x] Estrutura inicial da aplicação web.
-- [x] Catálogo de produtos e rotas para consulta de produtos.
+- [x] Catálogo de produtos.
+- [x] Consulta de produtos por categoria.
+- [x] Consulta de categorias.
 - [x] Formulário de contato com validação dos dados.
-- [x] Implementação de código OTP para verificação de e-mail.
-- [x] Cadastro e autenticação de clientes.
-- [x] Gerenciamento de sessão do cliente.
-- [x] Criação e consulta de pedidos.
-- [x] Cancelamento de pedidos pendentes, com devolução do estoque.
-- [x] Implementação inicial do checkout com Mercado Pago.
-- [ ] Finalização e validação do fluxo de pagamentos.
-- [ ] Finalização e testes do webhook de notificações de pagamento.
-- [ ] Finalização dos testes de integração do sistema.
 
-> Os itens em andamento serão atualizados conforme a implementação e os testes forem concluídos.
+### Cadastro e autenticação de clientes
+
+- [x] Cadastro de clientes.
+- [x] Verificação de e-mail utilizando código OTP.
+- [x] Autenticação de clientes.
+- [x] Gerenciamento de sessão.
+- [x] Reenvio de código de verificação.
+- [x] Controle de expiração e tentativas de validação do código.
+
+### Gerenciamento de pedidos
+
+- [x] Criação de pedidos.
+- [x] Consulta de pedidos do cliente autenticado.
+- [x] Consulta de detalhes do pedido.
+- [x] Cancelamento de pedidos pendentes.
+- [x] Devolução de estoque após cancelamento.
+- [x] Controle de status dos pedidos.
+
+### Pagamentos
+
+- [x] Implementação do checkout com Mercado Pago.
+- [x] Registro e gerenciamento de tentativas de pagamento.
+- [x] Integração com notificações de pagamento por webhook.
+- [x] Atualização dos status de pagamento e pedidos.
+- [x] Validação de assinatura das notificações recebidas.
+- [x] Testes automatizados das rotas relacionadas aos pagamentos.
+
+### Administração
+
+- [x] Autenticação administrativa.
+- [x] Gerenciamento de sessão administrativa.
+- [x] Consulta e filtragem de leads.
+- [x] Consulta e filtragem de pedidos.
+- [x] Visualização de detalhes dos pedidos.
+- [x] Atualização do status dos pedidos.
+- [x] Dashboard administrativo com indicadores e gráficos.
+
+### Testes e qualidade
+
+- [x] Testes automatizados com Vitest.
+- [x] Testes unitários das funções e serviços.
+- [x] Testes das rotas da API.
+- [x] Verificação de cobertura de código.
+- [x] Configuração de integração contínua com GitHub Actions.
+- [x] Verificação de lint.
+- [x] Verificação de build da aplicação.
 
 ## Requisitos para execução
 
 Antes de executar o projeto, é necessário ter instalado:
 
-- **Node.js**, em uma versão compatível com o Next.js utilizado.
-- **npm**, instalado com o Node.js.
-- **MySQL Server**, para execução do banco de dados.
-- **Git**, para clonar o repositório.
+- **Node.js 24**
+- **npm**
+- **MySQL Server**
+- **Git**
 - Um editor de código, como o Visual Studio Code.
 
 ## Configuração do projeto
@@ -84,9 +126,9 @@ npm install
 
 Crie um arquivo chamado `.env` na raiz do projeto, no mesmo nível do `package.json`.
 
-As variáveis utilizadas pela aplicação devem ser definidas de acordo com a configuração do banco de dados, do serviço de e-mail e do Mercado Pago.
+Configure as variáveis necessárias para a conexão com o banco de dados, autenticação, envio de e-mails e integração com o Mercado Pago.
 
-As variáveis de banco de dados utilizadas pelo adaptador Prisma incluem:
+Exemplo de configuração do banco de dados:
 
 ```env
 DB_HOST=localhost
@@ -96,14 +138,9 @@ DB_PASSWORD=sua_senha
 DB_NAME=croche
 ```
 
-A integração com o Mercado Pago também utiliza configurações de ambiente, incluindo:
+As integrações externas também utilizam variáveis de ambiente, como as credenciais do Mercado Pago e as configurações do serviço de e-mail.
 
-```env
-MERCADO_PAGO_ACCESS_TOKEN=seu_access_token
-MERCADO_PAGO_WEBHOOK_SECRET=seu_webhook_secret
-```
-
-Os valores acima são exemplos de preenchimento. Utilize suas próprias credenciais e configure as demais variáveis exigidas pelo código da aplicação.
+Utilize suas próprias credenciais e consulte os arquivos de configuração da aplicação para identificar todas as variáveis exigidas.
 
 **Importante:** nunca publique o arquivo `.env` nem envie credenciais reais para o GitHub. O arquivo deve permanecer protegido pelo `.gitignore`.
 
@@ -111,9 +148,11 @@ Os valores acima são exemplos de preenchimento. Utilize suas próprias credenci
 
 Inicie o servidor MySQL e crie o banco de dados utilizado pelo projeto, conforme a configuração definida no arquivo `.env`.
 
-O nome de banco de dados utilizado atualmente é `croche`.
+O nome do banco de dados utilizado atualmente é `croche`.
 
-O projeto utiliza o Prisma para acessar o banco de dados. O esquema está localizado em:
+O projeto utiliza o Prisma ORM para acessar e gerenciar o banco de dados.
+
+O esquema está localizado em:
 
 ```text
 prisma/schema.prisma
@@ -127,7 +166,7 @@ prisma7.config.ts
 
 Antes de executar a aplicação em um ambiente novo, verifique as migrações disponíveis e aplique-as conforme a configuração atual do projeto.
 
-## Executar a aplicação
+### 5. Executar a aplicação
 
 Após instalar as dependências, configurar as variáveis de ambiente e preparar o banco de dados, execute:
 
@@ -137,54 +176,142 @@ npm run dev
 
 Por padrão, a aplicação poderá ser acessada pelo navegador em:
 
-http://localhost:3000
+[http://localhost:3000](http://localhost:3000)
 
-## Outros comandos disponíveis
+## Scripts disponíveis
 
-Executar a verificação de build:
+| Comando | Descrição |
+|---|---|
+| `npm run dev` | Executa a aplicação em ambiente de desenvolvimento. |
+| `npm run build` | Compila a aplicação para produção. |
+| `npm run start` | Inicia a aplicação compilada. |
+| `npm run lint` | Executa a verificação de código com ESLint. |
+| `npm test` | Executa os testes automatizados. |
+| `npm test -- --coverage` | Executa os testes e gera o relatório de cobertura. |
 
-```bash
-npm run build
+## Testes automatizados
+
+O projeto utiliza o Vitest para execução dos testes automatizados e o V8 Coverage para análise da cobertura de código.
+
+Os testes estão organizados em:
+
+```text
+src/__tests__/unit_tests/
 ```
 
-Iniciar a aplicação em modo de produção após a compilação:
+Para executar os testes:
 
 ```bash
-npm run start
+npm test
 ```
 
-Executar o ESLint:
+Para executar os testes com cobertura:
 
 ```bash
-npm run lint
+npm test -- --coverage
 ```
+
+### Resultados da cobertura de testes
+
+| Métrica | Resultado |
+|---|---:|
+| Arquivos de teste | 20 |
+| Testes executados | 239 |
+| Statements | 96,56% |
+| Branches | 93,83% |
+| Functions | 100% |
+| Lines | 96,55% |
+
+Os testes contemplam funcionalidades de autenticação, cadastro, OTP, catálogo, pedidos, administração, checkout e webhook do Mercado Pago.
+
+O relatório HTML detalhado da cobertura é gerado no diretório `coverage/`.
+
+Para mais informações sobre a organização e os resultados dos testes, consulte:
+
+[`docs/TESTES.md`](docs/TESTES.md)
+
+## Documentação da API
+
+A documentação das rotas da API está disponível em:
+
+[`docs/API.md`](docs/API.md)
+
+O documento descreve os endpoints disponíveis, métodos HTTP, parâmetros, autenticação, respostas e principais regras de negócio.
 
 ## Estrutura principal do projeto
 
 ```text
 croche/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── docs/
+│   ├── API.md
+│   └── TESTES.md
 ├── prisma/
+│   ├── migrations/
 │   └── schema.prisma
 ├── public/
 ├── src/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── admin/
+│   │   │   ├── autenticacao/
+│   │   │   ├── cadastro/
+│   │   │   ├── categorias/
+│   │   │   ├── otp/
+│   │   │   ├── pedidos/
+│   │   │   ├── produtos/
+│   │   │   └── webhooks/
+│   │   ├── admin/
+│   │   ├── autenticacao/
+│   │   ├── pedido/
+│   │   └── produtos/
+│   ├── components/
+│   ├── lib/
+│   └── __tests__/
+│       └── unit_tests/
 ├── .env
 ├── .gitignore
 ├── package.json
 ├── prisma7.config.ts
+├── vitest.config.mjs
 ├── Dockerfile
 └── README.md
 ```
 
 A estrutura acima apresenta os principais diretórios e arquivos do projeto. Outros arquivos e subdiretórios podem existir dentro de `src/` e das demais pastas.
 
+## Integração contínua
+
+O projeto utiliza GitHub Actions para automatizar verificações durante o processo de desenvolvimento.
+
+O workflow está localizado em:
+
+```text
+.github/workflows/ci.yml
+```
+
+As verificações incluem:
+
+- Instalação das dependências.
+- Execução do ESLint.
+- Compilação da aplicação.
+
+O workflow é executado em eventos de push e pull request para a branch `master`.
+
 ## Execução com Docker
 
-As instruções para executar a aplicação com Docker serão adicionadas após a análise e a validação da configuração atual do ambiente Docker.
+A configuração e as instruções para executar a aplicação utilizando Docker serão adicionadas após a implementação e validação da infraestrutura de containers.
 
 ## Status do projeto
 
-O sistema está em desenvolvimento. As funcionalidades são implementadas e testadas progressivamente, com atenção à validação dos dados, à segurança das sessões, à persistência no banco de dados e à integração com o serviço de pagamentos.
+O projeto encontra-se em desenvolvimento.
+
+As funcionalidades principais da loja, autenticação de clientes, gerenciamento de pedidos, administração e integração com pagamentos já foram implementadas.
+
+Os testes automatizados e a integração contínua estão configurados. As próximas etapas incluem a documentação final, configuração de infraestrutura com Docker, preparação do ambiente de produção e implementação de integrações complementares.
 
 ## Repositório
 
-[GitHub — loja-virtual-croche](https://github.com/JI-MF/loja-virtual-croche)
+[GitHub — Produções da Vick Crochê](https://github.com/JI-MF/loja-virtual-croche)
