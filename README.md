@@ -32,6 +32,8 @@ O projeto utiliza Next.js, React, Prisma ORM e MySQL, incluindo funcionalidades 
 - **bcryptjs:** criptografia de senhas.
 - **Vitest:** framework para execução de testes automatizados.
 - **V8 Coverage:** ferramenta para análise de cobertura de testes.
+- **Docker:** plataforma utilizada para containerização da aplicação e do banco de dados.
+- **Docker Compose:** ferramenta utilizada para orquestrar os serviços da aplicação.
 
 ## Funcionalidades
 
@@ -276,6 +278,8 @@ croche/
 ├── package.json
 ├── prisma7.config.ts
 ├── vitest.config.mjs
+├── .dockerignore
+├── docker-compose.yml
 ├── Dockerfile
 └── README.md
 ```
@@ -302,15 +306,118 @@ O workflow é executado em eventos de push e pull request para a branch `master`
 
 ## Execução com Docker
 
-A configuração e as instruções para executar a aplicação utilizando Docker serão adicionadas após a implementação e validação da infraestrutura de containers.
+O projeto possui uma infraestrutura baseada em Docker e Docker Compose, permitindo executar a aplicação e o banco de dados MySQL em containers.
+
+A configuração utiliza três serviços:
+
+- **mysql:** disponibiliza o banco de dados MySQL 8.4 e utiliza um volume persistente para armazenar os dados.
+- **migrate:** executa automaticamente as migrações do Prisma após a inicialização do banco de dados.
+- **app:** executa a aplicação Next.js em ambiente de produção, utilizando a imagem otimizada com standalone output.
+
+### Pré-requisitos
+
+Para executar o projeto com Docker, é necessário ter instalado:
+
+- Docker Desktop ou Docker Engine.
+- Docker Compose.
+
+### Configuração do ambiente
+
+Antes de iniciar os containers, crie o arquivo `.env` na raiz do projeto.
+
+Configure as variáveis necessárias para o funcionamento da aplicação e do banco de dados, incluindo:
+
+```env
+DB_USER=seu_usuario
+DB_PASSWORD=sua_senha
+DB_NAME=croche
+MYSQL_ROOT_PASSWORD=sua_senha_root
+```
+
+As demais variáveis necessárias para autenticação, envio de e-mails e integração com o Mercado Pago também devem ser configuradas conforme os requisitos da aplicação.
+
+**Importante:** utilize credenciais próprias e não publique o arquivo `.env` no GitHub.
+
+### Inicialização dos containers
+
+Na raiz do projeto, execute:
+
+```bash
+docker compose up -d --build
+```
+
+Esse comando constrói as imagens necessárias e inicia os serviços.
+
+A inicialização respeita as dependências configuradas no Docker Compose: o banco de dados precisa estar saudável antes da execução das migrações, e a aplicação aguarda a conclusão bem-sucedida desse processo.
+
+### Verificação dos serviços
+
+Para consultar o estado dos containers:
+
+```bash
+docker compose ps
+docker compose ps -a
+```
+
+Para acompanhar os registros da aplicação:
+
+```bash
+docker compose logs -f app
+```
+
+### Acesso à aplicação
+
+Após a inicialização, a aplicação estará disponível em:
+
+[http://localhost:3000](http://localhost:3000)
+
+O banco de dados MySQL é disponibilizado internamente na rede Docker, sem publicação de sua porta para acesso externo pelo host.
+
+### Gerenciamento dos containers
+
+Para interromper os serviços sem remover os containers:
+
+```bash
+docker compose stop
+```
+
+Para iniciar novamente os serviços:
+
+```bash
+docker compose start
+```
+
+Para encerrar e remover os containers e a rede:
+
+```bash
+docker compose down
+```
+
+O volume persistente do MySQL é preservado por esse último comando.
+
+**Atenção:** o comando abaixo remove também os volumes, podendo apagar permanentemente os dados armazenados no banco:
+
+```bash
+docker compose down -v
+```
+
+### Persistência e migrações
+
+Os dados do MySQL são armazenados no volume Docker `mysql_data`, permitindo preservar o banco de dados mesmo após a recriação dos containers.
+
+As migrações do banco são gerenciadas pelo Prisma ORM e executadas pelo serviço `migrate` durante a inicialização da infraestrutura.
 
 ## Status do projeto
 
-O projeto encontra-se em desenvolvimento.
+O projeto encontra-se em desenvolvimento e possui suas principais funcionalidades implementadas.
 
-As funcionalidades principais da loja, autenticação de clientes, gerenciamento de pedidos, administração e integração com pagamentos já foram implementadas.
+As etapas de desenvolvimento das funcionalidades da loja virtual, autenticação de clientes, gerenciamento de pedidos, administração e integração com pagamentos foram concluídas.
 
-Os testes automatizados e a integração contínua estão configurados. As próximas etapas incluem a documentação final, configuração de infraestrutura com Docker, preparação do ambiente de produção e implementação de integrações complementares.
+As etapas de testes automatizados, documentação técnica, integração contínua e configuração da infraestrutura Docker também foram realizadas.
+
+A infraestrutura Docker foi validada por meio da inicialização dos containers, execução das migrações do Prisma, conexão com o banco de dados MySQL, consultas às rotas da API e verificação da persistência do banco de dados.
+
+As próximas atividades incluem a preparação do ambiente de produção, publicação da aplicação (deploy), implementação de observabilidade e integrações complementares.
 
 ## Repositório
 
