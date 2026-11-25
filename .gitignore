@@ -50,3 +50,6 @@ next-env.d.ts
 /.claude/
 /.windsurf/
 /pasta-teste/
+
+# Backups locais do banco de dados
+backup-*.sql
